@@ -1,0 +1,41 @@
+{% extends "bootstrap/base.html" %}
+
+{% block html_attribs %} lang="ru" {% endblock %}
+
+{% block metas %}
+<meta name="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{{ super() }}
+{% endblock metas %}
+{% block title %}{% block extratitle %}{% endblock extratitle %} - Лизинговая компания{% endblock %}
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% endblock styles %}
+
+
+{% block body_attribs %} class="container"{% endblock %}
+
+{% block navbar %}
+{% include 'sections/navbar.html' %}
+{% endblock navbar %}
+
+{% block content %}
+<section class="content">
+    <header class="my-3 border-bottom d-flex justify-content-between">
+        {% block header %}{% endblock %}
+    </header>
+    {% for message in get_flashed_messages() %}
+    {#<div class="flash">{{ message }}</div>#}
+    {{ message }}
+    {% endfor %}
+    {#{% include 'flashes/flash_error.html' %}#}
+
+    {% block task %}{% endblock %}
+</section>
+
+<footer class="navbar navbar-expand-md navbar-light bg-light justify-content-md-between">
+    <h4 class="text-info mb-0">Leasing Co app</h4>
+    <p class="navbar-text mb-0">Revision: {{ session['version'] or version }}</p>
+</footer>
+{% endblock content %}

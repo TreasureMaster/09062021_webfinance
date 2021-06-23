@@ -1,6 +1,7 @@
 import os
 
 from flask import Flask
+from flask_bs4 import Bootstrap
 
 
 def create_app(test_config=None):
@@ -26,8 +27,16 @@ def create_app(test_config=None):
     except OSError:
         pass
 
+    # Подключаем Бутстрап
+    Bootstrap(app)
+    app.config['BOOTSTRAP_CDN_FORCE_SSL'] = True
+
     from . import db
     db.init_app(app)
+
+    from . import reports
+    app.register_blueprint(reports.bp)
+    app.add_url_rule('/', endpoint='index')
 
     # простая страница, которая здоровается
     @app.route('/hello')

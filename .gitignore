@@ -55,6 +55,7 @@ instance/
 # My dirs and files
 sql/
 tasks/
+packages/
 test.py
 
 # Run files

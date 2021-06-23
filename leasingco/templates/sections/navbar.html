@@ -1,0 +1,72 @@
+<!-- <nav class="navbar navbar-expand-md navbar-light bg-light justify-content-md-between">
+    <div class="pl-3">
+        <strong><a href="{{ url_for('index') }}" class="navbar-brand text-info">Flaskr</a></strong>
+    </div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarTopContent" aria-controls="navbarSupportedContent"
+            aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse flex-md-grow-0" id="navbarTopContent">
+        <ul class="navbar-nav pl-3 pl-md-0">
+            {# Объект g и функция url_for() автоматически доступны в шаблонах #}
+            {% if g.user %}
+            <li class="nav-item navbar-text"><span><strong>Test</strong></span></li>
+            <li class="nav-item"><a href="#" class="nav-link">Log Out</a></li>
+            {% else %}
+            <li class="nav-item"><a href="#" class="nav-link">Register</a></li>
+            <li class="nav-item"><a href="#" class="nav-link">Log In</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</nav> -->
+<header class="container">
+    <nav class="navbar navbar-expand-lg flex-column align-items-start pr-0 navbar-light bg-light">
+        <div class="row w-100">
+            <div class="col">
+                <a href="{{ url_for('index') }}" class="navbar-brand">
+                    Лизинговая компания
+                </a>
+            </div>
+            <div class="w-100"></div>
+            <div class="col">
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTopContent"
+                    aria-controls="navbarTopContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarTopContent">
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item dropdown mr-4">
+                            <a href="#" class="nav-link dropdown-toggle text-dark" id="navbarDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Отчетности
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <a href="{{ url_for('index') }}" class="dropdown-item">Задание</a>
+                                <a href="{{ url_for('.parent') }}" class="dropdown-item">Материнская компания</a>
+                                <a href="#" class="dropdown-item">Дочерняя компания</a>
+                                <a href="#" class="dropdown-item">Предприятия группы компаний</a>
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown mr-4">
+                            <a href="#" class="nav-link dropdown-toggle text-dark" id="navbarDropdownKurs"
+                                role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Курсовая работа
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdownKurs">
+                                <a href="kursop.php" class="dropdown-item">Описание задания</a>
+                                <a href="kurs1.php" class="dropdown-item">Задание №1</a>
+                                <a href="kurs2.php" class="dropdown-item">Задание №2</a>
+                                <a href="kurs3.php" class="dropdown-item">Задание №3 и 5</a>
+                                <a href="kurs4.php" class="dropdown-item">Задание №4</a>
+                                <a href="kurs61.php?subtask=1" class="dropdown-item">Задание №6.1: запросы 1</a>
+                                <a href="kurs62.php?subtask=2" class="dropdown-item">Задание №6.2: запросы 2</a>
+                                <a href="kurs7.php" class="dropdown-item">Задание №7</a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>

@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h1 class="text-info pl-4">{% block extratitle %}Задание{% endblock %}: лизинговая компания</h1>
+    {#{% if g.user %}
+        <p class="pr-4"><a href="#" class="action">New post</a></p>
+    {% endif %}#}
+{% endblock header %}
+
+{#{% block posts %}
+    {% for post in posts %}
+        <article class="post">
+            <header class="mb-3 d-flex justify-content-between">
+                <div class="pl-3">
+                    <h3 class="mb-0">
+                        <a href="#" class="text-info text-decoration-none">{{ post['title'] }}</a>
+                    </h3>
+                    <div>
+                        <em>by {{ post['username'] }} on {{ post['created'].strftime('%Y-%m-%d') }}</em>
+                    </div>
+                </div>
+                {% if g.user['id'] == post['author_id'] %}
+                    <p class="pr-3 navbar-text"><a href="#" class="action">Edit</a></p>
+                {% endif %}
+            </header>
+            <p class="pl-3">{{ post['body'] }}</p>
+        </article>
+        {% if not loop.last %}
+            <hr>
+        {% endif %}
+    {% endfor %}
+{% endblock posts %}#}
+
+{% block task %}
+<div class="row">
+    <div class="col">
+        <h2 class="text-center">"Проектирование БД и создание таблиц в СУБД"</h2>
+        <p class="pt-3"><strong>Описание работы:</strong> Создать 3 таблицы: лизинговый портфель, передача техники в лизинг и склад автобусов.</p>
+        <p><strong>Задача №1:</strong> Лизинговый портфель</p>
+        <ul class="list-group px-5">
+            <li class="list-group-item list-group-item-action">Вывести весь портфель на экран как есть </li>
+            <li class="list-group-item list-group-item-action">Вывести портфель по регионам</li>
+            <li class="list-group-item list-group-item-action">Вывести в разрезе клиентов. То есть если у клиента несколько договоров,
+                то они должны складываться и на экран выводится общая сумма действующих договоров</li>
+            <li class="list-group-item list-group-item-action">Вывести в разрезе техники </li>
+            <li class="list-group-item list-group-item-action">вывести клиентов у которых есть долги с разделением на сроки задолженности: до 30 дней,
+                от 30 до 60 дней, от 60 до 90 дней и свыше 90 дней (клиент, сумма действующих договоров с долгами  и срок задолженности)</li>
+            <li class="list-group-item list-group-item-action">Расчет доли договоров с долгами (в разрезе сроков) в общей сумме портфеля</li>
+        </ul>
+        <p class="pt-3"><strong>Задача №2:</strong> Передача техники в лизинг</p>
+        <ul class="list-group px-5">
+            <li class="list-group-item list-group-item-action">Вывести по МЕНЕДЖЕРАМ в разрезе кварталов (менеджер, количество заключенных договоров,
+                общая сумма заключенных договоров)</li>
+            <li class="list-group-item list-group-item-action">Рассчитать комиссию по МЕНЕДЖЕРАМ и вывести на экран. Реализовать возможность
+                сортировки менеджеров по уровню комиссии.</li>
+            <li class="list-group-item list-group-item-action">Вывести сумму переданной техники по месяцам</li>
+        </ul>
+        <p class="pt-3"><strong>Задача №3:</strong> Склад техники</p>
+        <ul class="list-group px-5">
+            <li class="list-group-item list-group-item-action">Реализовать расчет оборачиваемости всего склада и в среднем по группам товаров</li>
+        </ul>
+    </div>
+</div>
+{% endblock task %}
