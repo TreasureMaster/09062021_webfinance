@@ -44,8 +44,8 @@
                             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                                 <a href="{{ url_for('index') }}" class="dropdown-item">Задание</a>
                                 <a href="{{ url_for('.parent') }}" class="dropdown-item">Материнская компания</a>
-                                <a href="#" class="dropdown-item">Дочерняя компания</a>
-                                <a href="#" class="dropdown-item">Предприятия группы компаний</a>
+                                <a href="{{ url_for('.subsidiary') }}" class="dropdown-item">Дочерняя компания</a>
+                                <a href="{{ url_for('.consolidation') }}" class="dropdown-item">Предприятия группы компаний</a>
                             </div>
                         </li>
                         <li class="nav-item dropdown mr-4">

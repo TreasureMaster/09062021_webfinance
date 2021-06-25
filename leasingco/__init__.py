@@ -44,4 +44,39 @@ def create_app(test_config=None):
         print(app.config)
         return 'Hello, World!'
 
+    # Фильтр числа
+    @app.template_filter('pdigit')
+    def pretty_digit(digit):
+        text = ''
+        digit = str(digit)
+        if '.' in digit:
+            first, second = digit.split('.')
+            second = '.' + second
+        else:
+            first = digit
+            second = ''
+        if first.startswith('-'):
+            first = first[1:]
+            sign = '-'
+        else:
+            sign = ''
+        for num, char in enumerate(reversed(first), start=0):
+            if num % 3:
+                text = char + text
+            else:
+                text = char + ' ' + text
+        text = sign + text.strip() + second
+        return text
+
+    # Коррекция 0.5 вверх
+    @app.template_filter('half')
+    def pretty_half(digit):
+        from decimal import Decimal
+        f = int(digit)
+        if (digit - f) == 0.5:
+            return digit + Decimal('0.01')
+        elif (digit - f) == -0.5:
+            return digit - Decimal('0.01')
+        return digit
+
     return app

@@ -1,23 +1,119 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<table class="table">
-    {% for year in years %}
+<h1 class="text-center">{{ pre_title }}Бухгалтерский баланс {{ post_title }}</h1>
+<table class="table table-hover">
+    {% for row in balance %}
         {% if loop.index == 1 %}
-        <thead>
+        <thead class="table-success">
             <th scope="col">Показатели</th>
-            <th scope="col">Код строки</th>
-            <th scope="col">2018</th>
-            <th scope="col">2019</th>
-            <th scope="col">2020</th>
+            <th scope="col" class="text-center">Код строки</th>
+            <th scope="col" class="text-center">2018</th>
+            <th scope="col" class="text-center">2019</th>
+            <th scope="col" class="text-center">2020</th>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Актив</td>
+                <td class="text-center">Код</td>
+                <td colspan="3"></td>
+            </tr>
+        {% endif %}
+            {% if row['code'] in delim or row['code'] == 1200 or row['code'] == 1500 %}
+                {% if row['code'] == 1600 or row['code'] == 1700 %}
+            <tr class="table-warning">
+                <td class="text-right font-weight-bold">{{ row['title'] }}</td>
+                {% else %}
+            <tr class="table-success">
+                <td class="text-right">{{ row['title'] }}</td>
+                {% endif %}
+            {% else %}
+            <tr>
+                <td>{{ row['title'] }}</td>
+                {% endif %}
+                {% if row['code'] < 1100 %}
+                <td></td>
+                {% else %}
+                <td class="font-weight-bold text-center">{{ row['code'] }}</td>
+                {% endif %}
+                <td class="text-nowrap text-right">{{ row['2018']|half|round|pdigit if row['2018'] else '' }}</td>
+                <td class="text-nowrap text-right">{{ row['2019']|half|round|pdigit if row['2019'] else '' }}</td>
+                <td class="text-nowrap text-right">{{ row['2020']|half|round|pdigit if row['2020'] else '' }}</td>
+            </tr>
+            {% if row['code'] in delim %}
+                <tr><td colspan="5"></td></tr>
+                {% if row['code'] == 1600 %}
+                <tr>
+                    <td>Пассив</td>
+                    <td class="text-center">Код</td>
+                    <td colspan="3"></td>
+                </tr>
+                {% endif %}
+            {% endif %}
+        {% if loop.last %}
+        </tbody>
+        {% endif %}
+    {% endfor %}
+</table>
+<h1 class="text-center">Отчет о финансовых результатах {{ post_title }}</h1>
+<table class="table table-hover my-5">
+    {% for row in finance %}
+        {% if loop.index == 1 %}
+        <thead class="table-primary">
+            <th scope="col">Показатели</th>
+            <th scope="col" class="text-nowrap">Код строки</th>
+            <th scope="col" class="text-center">2018</th>
+            <th scope="col" class="text-center">2019</th>
+            <th scope="col" class="text-center">2020</th>
         </thead>
         <tbody>
         {% endif %}
+            {% if row['code'] == 2400 %}
+            <tr class="table-warning">
+                <td class="text-right font-weight-bold">{{ row['title'] }}</td>
+                <td class="font-weight-bold text-center">{{ row['code'] }}</td>
+                {% if row['2018'] < 0 %}
+                <td class="font-weight-bold text-danger text-nowrap text-right">{{ row['2018']|half|round|pdigit }}</td>
+                {% else %}
+                <td class="font-weight-bold text-nowrap text-right">{{ row['2018']|half|round|pdigit if row['2018'] else '' }}</td>
+                {% endif %}
+                {% if row['2019'] < 0 %}
+                <td class="font-weight-bold text-danger text-nowrap text-right">{{ row['2019']|half|round|pdigit }}</td>
+                {% else %}
+                <td class="font-weight-bold text-nowrap text-right">{{ row['2019']|half|round|pdigit if row['2019'] else '' }}</td>
+                {% endif %}
+                {% if row['2020'] < 0 %}
+                <td class="font-weight-bold text-danger text-nowrap text-right">{{ row['2020']|half|round|pdigit }}</td>
+                {% else %}
+                <td class="font-weight-bold text-nowrap text-right">{{ row['2020']|half|round|pdigit if row['2020'] else '' }}</td>
+                {% endif %}
+            {% else %}
             <tr>
-                <td>{{ loop.index }}</td>
-                <td>{{ year['Year'] }}</td>
+                <td>{{ row['title'] }}</td>
+                {% if row['code'] == 2421 %}
+                <td class="font-italic text-center">{{ row['code'] }}</td>
+                {% else %}
+                <td class="font-weight-bold text-center">{{ row['code'] }}</td>
+                {% endif %}
+                {% if row['2018'] < 0 %}
+                <td class="text-danger text-nowrap text-right">{{ row['2018']|half|round|pdigit }}</td>
+                {% else %}
+                <td class="text-nowrap text-right">{{ row['2018']|half|round|pdigit if row['2018'] else '' }}</td>
+                {% endif %}
+                {% if row['2019'] < 0 %}
+                <td class="text-danger text-nowrap text-right">{{ row['2019']|half|round|pdigit }}</td>
+                {% else %}
+                <td class="text-nowrap text-right">{{ row['2019']|half|round|pdigit if row['2019'] else '' }}</td>
+                {% endif %}
+                {% if row['2020'] < 0 %}
+                <td class="text-danger text-nowrap text-right">{{ row['2020']|half|round|pdigit }}</td>
+                {% else %}
+                <td class="text-nowrap text-right">{{ row['2020']|half|round|pdigit if row['2020'] else '' }}</td>
+                {% endif %}
+            {% endif %}
             </tr>
-        {% if loop.index == 1 %}
+        {% if loop.last %}
+        <tr><td colspan="5"></td></tr>
         </tbody>
         {% endif %}
     {% endfor %}
