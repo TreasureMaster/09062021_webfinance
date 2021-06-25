@@ -44,6 +44,8 @@ def create_app(test_config=None):
         print(app.config)
         return 'Hello, World!'
 
+# -------------------------------- Мои фильтры ------------------------------- #
+
     # Фильтр числа
     @app.template_filter('pdigit')
     def pretty_digit(digit):
