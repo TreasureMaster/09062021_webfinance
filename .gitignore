@@ -57,6 +57,17 @@ sql/
 tasks/
 packages/
 test.py
+test_*.py
+
+# Temp hide
+storage.py
+custom_validators.py
+
+# Styles, js files
+# all.min.css
+# all.min.js
+*.min.css
+*.min.js
 
 # Run files
 # run.ps1

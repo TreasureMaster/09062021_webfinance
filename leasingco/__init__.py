@@ -38,11 +38,17 @@ def create_app(test_config=None):
     app.register_blueprint(reports.bp)
     app.add_url_rule('/', endpoint='index')
 
+    from . import product
+    app.register_blueprint(product.bp)
+    # app.add_url_rule('/', endpoint='index')
+
     # простая страница, которая здоровается
     @app.route('/hello')
     def hello():
         print(app.config)
         return 'Hello, World!'
+
+    # print(app.url_map)
 
 # -------------------------------- Мои фильтры ------------------------------- #
 

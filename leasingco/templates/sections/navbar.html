@@ -43,25 +43,25 @@
                             </a>
                             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                                 <a href="{{ url_for('index') }}" class="dropdown-item">Задание</a>
-                                <a href="{{ url_for('.parent') }}" class="dropdown-item">Материнская компания</a>
-                                <a href="{{ url_for('.subsidiary') }}" class="dropdown-item">Дочерняя компания</a>
-                                <a href="{{ url_for('.consolidation') }}" class="dropdown-item">Предприятия группы компаний</a>
+                                <a href="{{ url_for('reports.parent') }}" class="dropdown-item">Материнская компания</a>
+                                <a href="{{ url_for('reports.subsidiary') }}" class="dropdown-item">Дочерняя компания</a>
+                                <a href="{{ url_for('reports.consolidation') }}" class="dropdown-item">Предприятия группы компаний</a>
                             </div>
                         </li>
                         <li class="nav-item dropdown mr-4">
                             <a href="#" class="nav-link dropdown-toggle text-dark" id="navbarDropdownKurs"
                                 role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Курсовая работа
+                                Редактировать данные
                             </a>
                             <div class="dropdown-menu" aria-labelledby="navbarDropdownKurs">
-                                <a href="kursop.php" class="dropdown-item">Описание задания</a>
-                                <a href="kurs1.php" class="dropdown-item">Задание №1</a>
-                                <a href="kurs2.php" class="dropdown-item">Задание №2</a>
-                                <a href="kurs3.php" class="dropdown-item">Задание №3 и 5</a>
-                                <a href="kurs4.php" class="dropdown-item">Задание №4</a>
-                                <a href="kurs61.php?subtask=1" class="dropdown-item">Задание №6.1: запросы 1</a>
-                                <a href="kurs62.php?subtask=2" class="dropdown-item">Задание №6.2: запросы 2</a>
-                                <a href="kurs7.php" class="dropdown-item">Задание №7</a>
+                                <a href="{{ url_for('edit.viewproduct') }}" class="dropdown-item">Редактировать технику</a>
+                                <a href="{{ url_for('edit.viewregion') }}" class="dropdown-item">Редактировать регион</a>
+                                <a href="#" class="dropdown-item">Задание №2</a>
+                                <a href="#" class="dropdown-item">Задание №3 и 5</a>
+                                <a href="#" class="dropdown-item">Задание №4</a>
+                                <a href="#" class="dropdown-item">Задание №6.1: запросы 1</a>
+                                <a href="#" class="dropdown-item">Задание №6.2: запросы 2</a>
+                                <a href="#" class="dropdown-item">Задание №7</a>
                             </div>
                         </li>
                     </ul>
