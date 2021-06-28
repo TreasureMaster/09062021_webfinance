@@ -1,25 +1,83 @@
 from leasingco.db import get_db
 
-class Product:
 
-    def __init__(self, id=None, category_id=None, prefix=None, manufacturer=None,
-                       model=None, VIN=None, description=None, year=None):
+class BaseModel:
+
+    def __init__(self, data=None, table=None):
+        self.__table = table
         self.db = get_db()
         self.cursor = self.db.cursor()
-        self.create(id, category_id, prefix, manufacturer, model, VIN, description, year)
+        self.create(data)
 
-    def create(self, id=None, category_id=None, prefix=None, manufacturer=None,
-                     model=None, VIN=None, description=None, year=None):
-        self.__values = {
-            'id': id,
-            'category_id': category_id,
-            'prefix': prefix,
-            'manufacturer': manufacturer,
-            'model': model,
-            'VIN': VIN,
-            'description': description,
-            'year': year
-        }
+    def create(self, data=None):
+        self.reset()
+        if data is not None:
+            data = self.transform(data)
+            self.__values = data
+            for key, value in data.items():
+                self.__dictionary['keys'].append(key)
+                self.__dictionary['values'].append(value)
+
+    def reset(self):
+        self.__dictionary = {'keys': [], 'values': []}
+        self.__values = {}
+        self.__id = None
+
+    def transform(self, data):
+        data = dict(data)
+        data.pop('submit', None)
+        data.pop('csrf_token', None)
+        self.__id = data.pop('id', None)
+        return data
+
+    def get_row(self):
+        d = self.__values.copy()
+        d['id'] = self.__id
+        return d
+
+    def insert(self, data):
+        self.create(data)
+        query = "INSERT INTO {} ({}) VALUES ({})".format(
+            self.__table,
+            ','.join(self.__dictionary['keys']),
+            ','.join(['?']*len(self.__dictionary['keys']))
+        )
+        self.cursor.execute(query, self.__dictionary['values'])
+        self.db.commit()
+
+    def update(self, data):
+        # Сохраняем данные из формы
+        self.create(data)
+        self.cursor.execute(f"SELECT id FROM {self.__table} WHERE id={self.__id}")
+        if not self.cursor.fetchone():
+            raise ValueError('id еще не существует')
+        query = "UPDATE {} SET {} WHERE id={}".format(
+            self.__table,
+            ','.join(map(lambda k: k+'=?', self.__dictionary['keys'])),
+            self.__id
+        )
+        self.cursor.execute(query, self.__dictionary['values'])
+        self.db.commit()
+
+    def delete(self, idx):
+        self.cursor.execute(f"SELECT * FROM {self.__table} WHERE id={idx}")
+        if not self.cursor.fetchone():
+            raise ValueError('id еще не существует')
+        self.cursor.execute(f"DELETE {self.__table} WHERE id={idx}")
+        self.db.commit()
+
+    def select(self, idx):
+        self.cursor.execute(f"SELECT id FROM {self.__table} WHERE id={idx}")
+        if not self.cursor.fetchone():
+            raise ValueError('id еще не существует')
+        self.cursor.execute(f"SELECT * FROM {self.__table} WHERE id={idx}")
+        self.create(zip([column[0] for column in self.cursor.description], self.cursor.fetchone()))
+
+
+class Product(BaseModel):
+
+    def __init__(self, data=None):
+        super().__init__(data, 'Product')
 
     def get_storageTitle(self):
         return '{} {} {} {} {}'.format(
@@ -27,11 +85,8 @@ class Product:
             self.__values['manufacturer'],
             self.__values['model'],
             'VIN' + self.__values['VIN'] if self.__values['VIN'] else '',
-            self.__values['description']
+            self.__values['description'] if self.__values['description'] else ''
         ).strip()
-
-    def get_row(self):
-        return self.__values
 
     def get_contractTitle(self):
         return '{} {} {}'.format(
@@ -40,378 +95,35 @@ class Product:
             self.__values['model']
         ).strip()
 
-    def save_data(self, data):
-        for key, value in data.items():
-            if key in self.__values:
-                print(key, value)
-                self.__values[key] = value if value else None
 
-    def insert(self, data):
-        self.save_data(data)
-        prepare = [
-            self.__values['category_id'],
-            self.__values['prefix'],
-            self.__values['manufacturer'],
-            self.__values['model'],
-            self.__values['VIN'],
-            self.__values['description'],
-            self.__values['year']
-        ]
-        query = ("INSERT INTO Product (category_id, prefix, manufacturer, model, VIN, description, year) "
-                 "VALUES (?, ?, ?, ?, ?, ?, ?)")
-        self.cursor.execute(query, prepare)
-        self.db.commit()
+class Region(BaseModel):
 
-    def update(self, data):
-        # Сохраняем данные из формы
-        self.save_data(data)
-        self.cursor.execute(f"SELECT id FROM Product WHERE id={self.__values['id']}")
-        if not self.cursor.fetchone():
-            raise ValueError('id еще не существует')
-        prepare = [
-            self.__values['category_id'],
-            self.__values['prefix'],
-            self.__values['manufacturer'],
-            self.__values['model'],
-            self.__values['VIN'],
-            self.__values['description'],
-            self.__values['year'],
-            self.__values['id']
-        ]
-        query = ("UPDATE Product SET category_id=?, prefix=?, manufacturer=?, "
-                            "model=?, VIN=?, description=?, year=? WHERE id=?")
-        # print(query)
-        self.cursor.execute(query, prepare)
-        self.db.commit()
-
-    def delete(self, idx):
-        self.cursor.execute(f"SELECT * FROM Product WHERE id={idx}")
-        if not self.cursor.fetchone():
-            raise ValueError('id еще не существует')
-        self.cursor.execute(f"DELETE Product WHERE id={idx}")
-        self.db.commit()
-
-    def select(self, idx):
-        self.cursor.execute(f"SELECT id FROM Product WHERE id={idx}")
-        if not self.cursor.fetchone():
-            raise ValueError('id еще не существует')
-        self.cursor.execute(f"SELECT * FROM Product WHERE id={idx}")
-        product = [dict(zip([column[0] for column in self.cursor.description], row)) for row in self.cursor.fetchall()][0]
-        # print(product[0])
-        for key, value in product.items():
-            self.__values[key] = value
+    def __init__(self, data=None):
+        super().__init__(data, 'Regions')
 
 
-class Region:
+class Client(BaseModel):
 
-    def __init__(self, idx=None, region=None):
-        self.db = get_db()
-        self.cursor = self.db.cursor()
-        self.create(idx, region)
-
-    def create(self, idx=None, region=None):
-        self.__values = {
-            'id': idx,
-            'region': region,
-        }
-
-    def get_row(self):
-        return self.__values
-
-    def save_data(self, data):
-        print(data)
-        print(dict(data))
-        for key, value in data.items():
-            if key in self.__values:
-                # print(key, value)
-                self.__values[key] = value if value else None
-
-    def insert(self, data):
-        self.save_data(data)
-        prepare = [
-            self.__values['region']
-        ]
-        query = ("INSERT INTO Regions (region) VALUES (?)")
-        self.cursor.execute(query, prepare)
-        self.db.commit()
-
-    def update(self, data):
-        # Сохраняем данные из формы
-        self.save_data(data)
-        self.cursor.execute(f"SELECT id FROM Regions WHERE id={self.__values['id']}")
-        if not self.cursor.fetchone():
-            raise ValueError('id еще не существует')
-        prepare = [
-            self.__values['region'],
-            self.__values['id']
-        ]
-        query = ("UPDATE Regions SET region=? WHERE id=?")
-        self.cursor.execute(query, prepare)
-        self.db.commit()
-
-    def delete(self, idx):
-        self.cursor.execute(f"SELECT * FROM Regions WHERE id={idx}")
-        if not self.cursor.fetchone():
-            raise ValueError('id еще не существует')
-        self.cursor.execute(f"DELETE Regions WHERE id={idx}")
-        self.db.commit()
-
-    def select(self, idx):
-        self.cursor.execute(f"SELECT id FROM Regions WHERE id={idx}")
-        if not self.cursor.fetchone():
-            raise ValueError('id еще не существует')
-        self.cursor.execute(f"SELECT * FROM Regions WHERE id={idx}")
-        product = [dict(zip([column[0] for column in self.cursor.description], row)) for row in self.cursor.fetchall()][0]
-        print(product)
-        for key, value in product.items():
-            self.__values[key] = value
-
-
-class Client:
-
-    def __init__(self, id=None, region_id=None, title=None, INN=None, incorp_id=None):
-        self.db = get_db()
-        self.cursor = self.db.cursor()
-        self.create(id, region_id, title, INN, incorp_id)
-
-    def create(self, id=None, region_id=None, title=None, INN=None, incorp_id=None):
-        self.__values = {
-            'id': id,
-            'region_id': region_id,
-            'title': title,
-            'INN': INN,
-            'incorp_id': incorp_id
-        }
+    def __init__(self, data=None):
+        super().__init__(data, 'Clients')
 
     def get_fullTitle(self):
-        self.cursor.execute(f"SELECT Incorporation.kind FROM Clients JOIN Incorporation "
-                            f"ON Clients.incorp_id=Incorporation.id WHERE id={self.__values['id']}")
+        self.cursor.execute(f"SELECT Incorporation.kind FROM {self.__table} JOIN Incorporation "
+                            f"ON {self.__table}.incorp_id=Incorporation.id WHERE id={self.__id}")
         row = self.cursor.fetchone()[0]
         return '{}, {}'.format(
             self.__values['title'],
             row['kind'],
         ).strip()
 
-    def get_row(self):
-        return self.__values
 
-    def save_data(self, data):
-        for key, value in data.items():
-            if key in self.__values:
-                print(key, value)
-                self.__values[key] = value if value else None
+class Incorporation(BaseModel):
 
-    def insert(self, data):
-        self.save_data(data)
-        prepare = [
-            self.__values['region_id'],
-            self.__values['title'],
-            self.__values['INN'],
-            self.__values['incorp_id'],
-        ]
-        query = ("INSERT INTO Clients (region_id, title, INN, incorp_id) "
-                 "VALUES (?, ?, ?, ?)")
-        self.cursor.execute(query, prepare)
-        self.db.commit()
-
-    def update(self, data):
-        # Сохраняем данные из формы
-        self.save_data(data)
-        self.cursor.execute(f"SELECT id FROM Clients WHERE id={self.__values['id']}")
-        if not self.cursor.fetchone():
-            raise ValueError('id еще не существует')
-        prepare = [
-            self.__values['region_id'],
-            self.__values['title'],
-            self.__values['INN'],
-            self.__values['incorp_id'],
-            self.__values['id']
-        ]
-        query = ("UPDATE Clients SET region_id=?, title=?, INN=?, incorp_id=? WHERE id=?")
-        # print(query)
-        self.cursor.execute(query, prepare)
-        self.db.commit()
-
-    def delete(self, idx):
-        self.cursor.execute(f"SELECT * FROM Clients WHERE id={idx}")
-        if not self.cursor.fetchone():
-            raise ValueError('id еще не существует')
-        self.cursor.execute(f"DELETE Clients WHERE id={idx}")
-        self.db.commit()
-
-    def select(self, idx):
-        self.cursor.execute(f"SELECT id FROM Clients WHERE id={idx}")
-        if not self.cursor.fetchone():
-            raise ValueError('id еще не существует')
-        self.cursor.execute(f"SELECT * FROM Clients WHERE id={idx}")
-        client = [dict(zip([column[0] for column in self.cursor.description], row)) for row in self.cursor.fetchall()][0]
-        # print(product[0])
-        for key, value in client.items():
-            self.__values[key] = value
+    def __init__(self, data=None):
+        super().__init__(data, 'Incorporation')
 
 
-class Incorporation:
+class Contract(BaseModel):
 
-    def __init__(self, idx=None, kind=None):
-        self.db = get_db()
-        self.cursor = self.db.cursor()
-        self.create(idx, kind)
-
-    def create(self, idx=None, kind=None):
-        self.__values = {
-            'id': idx,
-            'kind': kind,
-        }
-
-    def get_row(self):
-        return self.__values
-
-    def save_data(self, data):
-        for key, value in data.items():
-            if key in self.__values:
-                print(key, value)
-                self.__values[key] = value if value else None
-
-    def insert(self, data):
-        self.save_data(data)
-        prepare = [
-            self.__values['kind']
-        ]
-        query = ("INSERT INTO Incorporation (kind) VALUES (?)")
-        self.cursor.execute(query, prepare)
-        self.db.commit()
-
-    def update(self, data):
-        # Сохраняем данные из формы
-        self.save_data(data)
-        self.cursor.execute(f"SELECT id FROM Incorporation WHERE id={self.__values['id']}")
-        if not self.cursor.fetchone():
-            raise ValueError('id еще не существует')
-        prepare = [
-            self.__values['kind'],
-            self.__values['id']
-        ]
-        query = ("UPDATE Incorporation SET kind=? WHERE id=?")
-        self.cursor.execute(query, prepare)
-        self.db.commit()
-
-    def delete(self, idx):
-        self.cursor.execute(f"SELECT * FROM Incorporation WHERE id={idx}")
-        if not self.cursor.fetchone():
-            raise ValueError('id еще не существует')
-        self.cursor.execute(f"DELETE Incorporation WHERE id={idx}")
-        self.db.commit()
-
-    def select(self, idx):
-        self.cursor.execute(f"SELECT id FROM Incorporation WHERE id={idx}")
-        if not self.cursor.fetchone():
-            raise ValueError('id еще не существует')
-        self.cursor.execute(f"SELECT * FROM Incorporation WHERE id={idx}")
-        product = [dict(zip([column[0] for column in self.cursor.description], row)) for row in self.cursor.fetchall()][0]
-        for key, value in product.items():
-            self.__values[key] = value
-
-
-class Contract:
-
-    def __init__(self, id=None, number=None, begin_date=None, end_date=None, client_id=None,
-                       comission=None, transfer_date=None, product_id=None, quantity=None, manager=None):
-        self.db = get_db()
-        self.cursor = self.db.cursor()
-        self.create(id, number, begin_date, end_date, client_id, comission, transfer_date,
-                    product_id, quantity, manager)
-
-    def create(self, id=None, number=None, begin_date=None, end_date=None, client_id=None,
-                       comission=None, transfer_date=None, product_id=None, quantity=None, manager=None):
-        self.__values = {
-            'id': id,
-            'number': number,
-            'begin_date': begin_date,
-            'end_date': end_date,
-            'client_id': client_id,
-            'comission': comission,
-            'transfer_date': transfer_date,
-            'product_id': product_id,
-            'quantity': quantity,
-            'manager': manager,
-        }
-
-    def get_storageTitle(self):
-        return '{} {} {} {} {}'.format(
-            self.__values['prefix'],
-            self.__values['manufacturer'],
-            self.__values['model'],
-            'VIN' + self.__values['VIN'] if self.__values['VIN'] else '',
-            self.__values['description']
-        ).strip()
-
-    def get_row(self):
-        return self.__values
-
-    def get_contractTitle(self):
-        return '{} {} {}'.format(
-            self.__values['prefix'],
-            self.__values['manufacturer'],
-            self.__values['model']
-        ).strip()
-
-    def save_data(self, data):
-        for key, value in data.items():
-            if key in self.__values:
-                print(key, value)
-                self.__values[key] = value if value else None
-
-    def insert(self, data):
-        self.save_data(data)
-        prepare = [
-            self.__values['category_id'],
-            self.__values['prefix'],
-            self.__values['manufacturer'],
-            self.__values['model'],
-            self.__values['VIN'],
-            self.__values['description'],
-            self.__values['year']
-        ]
-        query = ("INSERT INTO Product (category_id, prefix, manufacturer, model, VIN, description, year) "
-                 "VALUES (?, ?, ?, ?, ?, ?, ?)")
-        self.cursor.execute(query, prepare)
-        self.db.commit()
-
-    def update(self, data):
-        # Сохраняем данные из формы
-        self.save_data(data)
-        self.cursor.execute(f"SELECT id FROM Product WHERE id={self.__values['id']}")
-        if not self.cursor.fetchone():
-            raise ValueError('id еще не существует')
-        prepare = [
-            self.__values['category_id'],
-            self.__values['prefix'],
-            self.__values['manufacturer'],
-            self.__values['model'],
-            self.__values['VIN'],
-            self.__values['description'],
-            self.__values['year'],
-            self.__values['id']
-        ]
-        query = ("UPDATE Product SET category_id=?, prefix=?, manufacturer=?, "
-                            "model=?, VIN=?, description=?, year=? WHERE id=?")
-        # print(query)
-        self.cursor.execute(query, prepare)
-        self.db.commit()
-
-    def delete(self, idx):
-        self.cursor.execute(f"SELECT * FROM Product WHERE id={idx}")
-        if not self.cursor.fetchone():
-            raise ValueError('id еще не существует')
-        self.cursor.execute(f"DELETE Product WHERE id={idx}")
-        self.db.commit()
-
-    def select(self, idx):
-        self.cursor.execute(f"SELECT id FROM Product WHERE id={idx}")
-        if not self.cursor.fetchone():
-            raise ValueError('id еще не существует')
-        self.cursor.execute(f"SELECT * FROM Product WHERE id={idx}")
-        product = [dict(zip([column[0] for column in self.cursor.description], row)) for row in self.cursor.fetchall()][0]
-        # print(product[0])
-        for key, value in product.items():
-            self.__values[key] = value
+    def __init__(self, data=None):
+        super().__init__(data, 'Contract')
