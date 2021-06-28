@@ -162,3 +162,148 @@ class Region:
         product = [dict(zip([column[0] for column in self.cursor.description], row)) for row in self.cursor.fetchall()][0]
         for key, value in product.items():
             self.__values[key] = value
+
+
+class Client:
+
+    def __init__(self, id=None, region_id=None, title=None, INN=None, incorp_id=None):
+        self.db = get_db()
+        self.cursor = self.db.cursor()
+        self.create(id, region_id, title, INN, incorp_id)
+
+    def create(self, id=None, region_id=None, title=None, INN=None, incorp_id=None):
+        self.__values = {
+            'id': id,
+            'region_id': region_id,
+            'title': title,
+            'INN': INN,
+            'incorp_id': incorp_id
+        }
+
+    def get_fullTitle(self):
+        self.cursor.execute(f"SELECT Incorporation.kind FROM Clients JOIN Incorporation "
+                            f"ON Clients.incorp_id=Incorporation.id WHERE id={self.__values['id']}")
+        row = self.cursor.fetchone()[0]
+        return '{}, {}'.format(
+            self.__values['title'],
+            row['kind'],
+        ).strip()
+
+    def get_row(self):
+        return self.__values
+
+    def save_data(self, data):
+        for key, value in data.items():
+            if key in self.__values:
+                print(key, value)
+                self.__values[key] = value if value else None
+
+    def insert(self, data):
+        self.save_data(data)
+        prepare = [
+            self.__values['region_id'],
+            self.__values['title'],
+            self.__values['INN'],
+            self.__values['incorp_id'],
+        ]
+        query = ("INSERT INTO Clients (region_id, title, INN, incorp_id) "
+                 "VALUES (?, ?, ?, ?)")
+        self.cursor.execute(query, prepare)
+        self.db.commit()
+
+    def update(self, data):
+        # Сохраняем данные из формы
+        self.save_data(data)
+        self.cursor.execute(f"SELECT id FROM Clients WHERE id={self.__values['id']}")
+        if not self.cursor.fetchone():
+            raise ValueError('id еще не существует')
+        prepare = [
+            self.__values['region_id'],
+            self.__values['title'],
+            self.__values['INN'],
+            self.__values['incorp_id'],
+            self.__values['id']
+        ]
+        query = ("UPDATE Clients SET region_id=?, title=?, INN=?, incorp_id=? WHERE id=?")
+        # print(query)
+        self.cursor.execute(query, prepare)
+        self.db.commit()
+
+    def delete(self, idx):
+        self.cursor.execute(f"SELECT * FROM Clients WHERE id={idx}")
+        if not self.cursor.fetchone():
+            raise ValueError('id еще не существует')
+        self.cursor.execute(f"DELETE Clients WHERE id={idx}")
+        self.db.commit()
+
+    def select(self, idx):
+        self.cursor.execute(f"SELECT id FROM Clients WHERE id={idx}")
+        if not self.cursor.fetchone():
+            raise ValueError('id еще не существует')
+        self.cursor.execute(f"SELECT * FROM Clients WHERE id={idx}")
+        client = [dict(zip([column[0] for column in self.cursor.description], row)) for row in self.cursor.fetchall()][0]
+        # print(product[0])
+        for key, value in client.items():
+            self.__values[key] = value
+
+
+class Incorporation:
+
+    def __init__(self, idx=None, kind=None):
+        self.db = get_db()
+        self.cursor = self.db.cursor()
+        self.create(idx, kind)
+
+    def create(self, idx=None, kind=None):
+        self.__values = {
+            'id': idx,
+            'kind': kind,
+        }
+
+    def get_row(self):
+        return self.__values
+
+    def save_data(self, data):
+        for key, value in data.items():
+            if key in self.__values:
+                print(key, value)
+                self.__values[key] = value if value else None
+
+    def insert(self, data):
+        self.save_data(data)
+        prepare = [
+            self.__values['kind']
+        ]
+        query = ("INSERT INTO Incorporation (kind) VALUES (?)")
+        self.cursor.execute(query, prepare)
+        self.db.commit()
+
+    def update(self, data):
+        # Сохраняем данные из формы
+        self.save_data(data)
+        self.cursor.execute(f"SELECT id FROM Incorporation WHERE id={self.__values['id']}")
+        if not self.cursor.fetchone():
+            raise ValueError('id еще не существует')
+        prepare = [
+            self.__values['kind'],
+            self.__values['id']
+        ]
+        query = ("UPDATE Incorporation SET kind=? WHERE id=?")
+        self.cursor.execute(query, prepare)
+        self.db.commit()
+
+    def delete(self, idx):
+        self.cursor.execute(f"SELECT * FROM Incorporation WHERE id={idx}")
+        if not self.cursor.fetchone():
+            raise ValueError('id еще не существует')
+        self.cursor.execute(f"DELETE Incorporation WHERE id={idx}")
+        self.db.commit()
+
+    def select(self, idx):
+        self.cursor.execute(f"SELECT id FROM Incorporation WHERE id={idx}")
+        if not self.cursor.fetchone():
+            raise ValueError('id еще не существует')
+        self.cursor.execute(f"SELECT * FROM Incorporation WHERE id={idx}")
+        product = [dict(zip([column[0] for column in self.cursor.description], row)) for row in self.cursor.fetchall()][0]
+        for key, value in product.items():
+            self.__values[key] = value

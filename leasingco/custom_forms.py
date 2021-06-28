@@ -57,3 +57,33 @@ class RegionForm(FlaskForm):
                               'value': 'Сохранить',
                               'class': 'btn btn-primary'
                           })
+
+
+class IncorpForm(FlaskForm):
+
+    kind = StringField('Организационно-правовая форма', render_kw={'class': 'form-control'}, validators=[InputRequired()])
+    id = HiddenField('', default=0)
+    submit = SubmitField('Submit',
+                          render_kw={
+                              'value': 'Сохранить',
+                              'class': 'btn btn-primary'
+                          })
+
+
+class ClientForm(FlaskForm):
+
+    region_id = SelectField('Регион клиента',
+                                # validators=[InputRequired()],
+                                # coerce='int',
+                                render_kw={'class': 'form-control'})
+    title = StringField('Название клиента', render_kw={'class': 'form-control'})
+    INN = IntegerField('ИНН клиента', render_kw={'class': 'form-control'})
+    incorp_id = SelectField('Организационно-правовая форма',
+                                # coerce='int',
+                                render_kw={'class': 'form-control'})
+    id = HiddenField('', default=0)
+    submit = SubmitField('Submit',
+                          render_kw={
+                              'value': 'Сохранить',
+                              'class': 'btn btn-primary'
+                          })

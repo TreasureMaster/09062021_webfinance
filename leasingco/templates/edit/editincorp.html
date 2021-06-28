@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{#{% import 'bootstrap/wtf.html' as wtf %}#}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='all.min.css') }}">
+{% endblock styles %}
+
+{% block task %}
+
+<h1 class="text-center">Редактирование организационно-правовой формы</h1>
+
+<table class="table table-hover table-sm">
+    <thead class="table-success">
+        <th scope="col" class="text-center">Организационно-правовая форма</th>
+        <th scope="col" class="text-center">Действия</th>
+    </thead>
+    <tbody>
+    {% for row in incorps %}
+        <tr>
+            <td class="text-left">{{ row['kind'] if row['kind'] else '' }}</td>
+            <td class="text-right">
+                {% include 'sections/btn_edit_incorp.html' %}
+            </td>
+        </tr>
+
+    {% endfor %}
+</table>
+
+<h2>Вставка новой или обновление старой организационно-правовой формы</h2>
+
+<div class="mt-3 container" id="editIncorp">
+    {#{{ wtf.quick_form(form) }}#}
+    <form action="#" method="POST" class="my-3">
+        <div class="row">
+            <div class="form-group col-12">
+                {{ form.kind.label }}
+                {{ form.kind }}
+            </div>
+        </div>
+        {{ form.hidden_tag() }}
+        {{ form.submit() }}
+    </form>
+</div>
+
+{% include 'sections/modals.html' %}
+
+{% endblock %}
+
+{% block scripts %}
+
+<script src="{{ url_for('static', filename='jquery-3.2.1.min.js') }}"></script>
+<script src="{{ url_for('static', filename='popper.min.js') }}"></script>
+{{ super() }}
+<script src="{{ url_for('static', filename='all.min.js') }}"></script>
+<script type="text/javascript">
+    let user_id = '';
+    let user_tab = '';
+    $('#exampleModalCenter').on('show.bs.modal', function(event) {
+        console.log('in modal')
+        user_id = $(event.relatedTarget).data('id');
+        user_tab = $(event.relatedTarget).data('tab');
+        let user_desc = $(event.relatedTarget).data('desc');
+        if (user_tab == 'firms') {
+            user_desc = "фирме " + user_desc;
+        } else if (user_tab == 'products') {
+            user_desc = "продукте " + user_desc;
+        } else if (user_tab == 'orders') {
+            user_desc = "заказе от " + user_desc;
+        }
+        $("#modalText").html("Будет удалена запись о " + user_desc + " из таблицы " + user_tab + ".");
+    });
+    $('#deleteEntry').on('click', function(event) {
+        let lab = $('#deleteEntry').data('lab');
+        //$(location).attr('href', 'delete.php?tab=' + user_tab + '&id=' + user_id + '&page=' + lab);
+        let link = "{{ url_for('edit.viewincorp', action='delete') }}"
+        $(location).attr('href', link + '/' + user_id);
+    });
+</script>
+{% endblock scripts %}
