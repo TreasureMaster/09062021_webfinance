@@ -5,8 +5,8 @@ from werkzeug.exceptions import abort
 
 # from flaskr.auth import login_required
 from leasingco.db import get_db
-from leasingco.models import Product, Region, Client, Incorporation
-from leasingco.custom_forms import ProductForm, RegionForm, IncorpForm, ClientForm
+from leasingco.models import Product, Region, Client, Incorporation, Contract
+from leasingco.custom_forms import ProductForm, RegionForm, IncorpForm, ClientForm, ContractForm
 
 bp = Blueprint('edit', __name__, url_prefix='/edit')
 
@@ -189,3 +189,54 @@ def viewclient(action=None, idx=None):
         return redirect(url_for('edit.viewclient'))
     
     return render_template('edit/editclient.html', clients=clients, form=form)
+
+
+@bp.route('/viewcontract', methods=('GET', 'POST'))
+@bp.route('/viewcontract/<string:action>', methods=('GET', 'POST'))
+@bp.route('/viewcontract/<string:action>/<int:idx>', methods=('GET', 'POST'))
+def viewcontract(action=None, idx=None):
+    # print(request.url)
+    db = get_db()
+    error = None
+    cursor = db.cursor()
+    cursor.execute("SELECT Clients.id, CONCAT(Clients.title, ',', Incorporation.kind) AS title FROM Clients "
+                   "JOIN Incorporation ON Clients.incorp_id=Incorporation.id")
+    form = ContractForm()
+    form.client_id.choices = [(c.id, c.title) for c in cursor.fetchall()]
+    cursor.execute("SELECT id, LTRIM(CONCAT(prefix, ' ', manufacturer, ' ', model)) as tech FROM Product")
+    form.product_id.choices = [(c.id, c.tech) for c in cursor.fetchall()]
+    if request.method == 'POST' and action is None:
+        contract = Contract()
+        contract.insert(request.form)
+    if action == 'update':
+        contract = Contract()
+        if request.method == 'POST':
+            contract.update(request.form)
+        contract.select(idx)
+        form.client_id.default = contract.get_row()['client_id']
+        form.product_id.default = contract.get_row()['product_id']
+        form.process()
+        for key, value in contract.get_row().items():
+            if key not in {'client_id', 'product_id'}:
+                setattr(form[key], 'data', value)
+    if action == 'delete':
+        contract = Contract()
+        contract.delete(idx)
+        # redirect(url_for('product.viewproduct'))
+    contracts = db.execute("SELECT Contract.*, CONCAT(Clients.title, ', ', Incorporation.kind) AS title, "
+                           "LTRIM(CONCAT(Product.prefix, ' ', Product.manufacturer, ' ', Product.model)) as tech, "
+                           "Regions.region FROM Contract "
+                           "JOIN Product ON Contract.product_id=Product.id "
+                           "JOIN Clients ON Contract.client_id=Clients.id "
+                           "JOIN Regions ON Clients.region_id=Regions.id "
+                           "JOIN Incorporation ON Clients.incorp_id=Incorporation.id").fetchall()
+    # print(products[0])
+    if contracts is None:
+        error = 'DB is empty.'
+    if error is not None:
+        flash(error)
+        return redirect(url_for('index'))
+    if request.method == 'POST' or action == 'delete':
+        return redirect(url_for('edit.viewcontract'))
+    
+    return render_template('edit/editcontract.html', contracts=contracts, form=form)

@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, TextAreaField, IntegerField, SelectField
+from wtforms import (StringField, SubmitField, IntegerField, SelectField, DateField, FloatField)
 from wtforms.fields.simple import HiddenField
 from wtforms.validators import Email, InputRequired
 # from leasingco.custom_validators import AnyInputRequired, Phone
@@ -81,6 +81,28 @@ class ClientForm(FlaskForm):
     incorp_id = SelectField('Организационно-правовая форма',
                                 # coerce='int',
                                 render_kw={'class': 'form-control'})
+    id = HiddenField('', default=0)
+    submit = SubmitField('Submit',
+                          render_kw={
+                              'value': 'Сохранить',
+                              'class': 'btn btn-primary'
+                          })
+
+
+class ContractForm(FlaskForm):
+
+    number = StringField('Номер контракта',
+                                validators=[InputRequired()],
+                                render_kw={'class': 'form-control'})
+    begin_date = DateField('Дата начала договора', render_kw={'class': 'form-control'})
+    end_date = DateField('Дата окончания договора', render_kw={'class': 'form-control'})
+    client_id = SelectField('Лизингополучатель', render_kw={'class': 'form-control'})
+    comission = FloatField('Комиссия', render_kw={'class': 'form-control'})
+    transfer_date = DateField('Дата передачи техники', render_kw={'class': 'form-control'})
+    product_id = SelectField('Название техники', render_kw={'class': 'form-control'})
+    quantity = IntegerField('Количество', render_kw={'class': 'form-control'})
+    manager = StringField('Менеджер', render_kw={'class': 'form-control'})
+    total = IntegerField('Сумма договора', render_kw={'class': 'form-control'})
     id = HiddenField('', default=0)
     submit = SubmitField('Submit',
                           render_kw={

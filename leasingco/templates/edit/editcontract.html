@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='all.min.css') }}">
+{% endblock styles %}
+
+{% block task %}
+
+<h1 class="text-center">Редактирование данных договора</h1>
+
+<table class="table table-hover table-sm">
+    <thead class="table-success">
+        <th scope="col" class="text-center">№</th>
+        <th scope="col" class="text-center">Дата начала договора</th>
+        <th scope="col" class="text-center">Дата окончания договора</th>
+        <th scope="col" class="text-center">Клиент</th>
+        <th scope="col" class="text-center">Техника</th>
+        <th scope="col" class="text-center">Кол-во</th>
+        <th scope="col" class="text-center">Сумма</th>
+        <th scope="col" class="text-center">%</th>
+        <th scope="col" class="text-center">Дата передачи</th>
+        <th scope="col" class="text-center">Регион</th>
+        <th scope="col" class="text-center">Менеджер</th>
+        <th scope="col" class="text-center">Действия</th>
+    </thead>
+    <tbody>
+    {% for row in contracts %}
+        <tr>
+            <td class="text-left text-nowrap">{{ row['number'] if row['number'] else '' }}</td>
+            <td class="text-center text-nowrap small">{{ row['begin_date'].strftime('%d.%m.%Y') if row['begin_date'] else '' }}</td>
+            <td class="text-center text-nowrap small">{{ row['end_date'].strftime('%d.%m.%Y') if row['end_date'] else '' }}</td>
+            <td class="text-left small">{{ row['title'] if row['title'] else '' }}</td>
+            <td class="text-left small">{{ row['tech'] if row['tech'] else '' }}</td>
+            <td class="text-center">{{ row['quantity'] if row['quantity'] else '' }}</td>
+            <td class="text-right">{{ row['total'] if row['total'] else '' }}</td>
+            <td class="text-center">{{ '{:.2f}%'.format(row['comission']) if row['comission'] else '' }}</td>
+            <td class="text-center text-nowrap small">{{ row['transfer_date'].strftime('%d.%m.%Y') if row['transfer_date'] else '' }}</td>
+            <td class="text-left small">{{ row['region'] if row['region'] else '' }}</td>
+            <td class="text-right small">{{ row['manager'] if row['manager'] else '' }}</td>
+            <td class="text-right">
+                {% include 'sections/btn_edit_client.html' %}
+            </td>
+        </tr>
+
+    {% endfor %}
+</table>
+
+<h2>Вставка новых или обновление старых договоров</h2>
+<div class="mt-3 container" id="editContract">
+    {#{{ wtf.quick_form(form) }}#}
+    <form action="#" method="POST" class="my-3">
+        <div class="row">
+            <div class="form-group col-3">
+                {{ form.number.label }}
+                {{ form.number }}
+            </div>
+            <div class="form-group col-3">
+                {{ form.begin_date.label }}
+                {{ form.begin_date }}
+            </div>
+            <div class="form-group col-3">
+                {{ form.end_date.label }}
+                {{ form.end_date }}
+            </div>
+            <div class="form-group col-3">
+                {{ form.transfer_date.label }}
+                {{ form.transfer_date }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-6">
+                {{ form.product_id.label }}
+                {{ form.product_id }}
+            </div>
+            <div class="form-group col-2">
+                {{ form.quantity.label }}
+                {{ form.quantity }}
+            </div>
+            <div class="form-group col-4">
+                {{ form.total.label }}
+                {{ form.total }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-6">
+                {{ form.client_id.label }}
+                {{ form.client_id }}
+            </div>
+            <div class="form-group col-4">
+                {{ form.manager.label }}
+                {{ form.manager }}
+            </div>
+            <div class="form-group col-2">
+                {{ form.comission.label }}
+                {{ form.comission }}
+            </div>
+        </div>
+        {{ form.hidden_tag() }}
+        {{ form.submit() }}
+    </form>
+</div>
+
+{% include 'sections/modals.html' %}
+
+{% endblock %}
+
+{% block scripts %}
+
+<script src="{{ url_for('static', filename='jquery-3.2.1.min.js') }}"></script>
+<script src="{{ url_for('static', filename='popper.min.js') }}"></script>
+{{ super() }}
+<script src="{{ url_for('static', filename='all.min.js') }}"></script>
+<script type="text/javascript">
+    let user_id = '';
+    let user_tab = '';
+    $('#exampleModalCenter').on('show.bs.modal', function(event) {
+        console.log('in modal')
+        user_id = $(event.relatedTarget).data('id');
+        user_tab = $(event.relatedTarget).data('tab');
+        let user_desc = $(event.relatedTarget).data('desc');
+        if (user_tab == 'firms') {
+            user_desc = "фирме " + user_desc;
+        } else if (user_tab == 'products') {
+            user_desc = "продукте " + user_desc;
+        } else if (user_tab == 'orders') {
+            user_desc = "заказе от " + user_desc;
+        }
+        $("#modalText").html("Будет удалена запись о " + user_desc + " из таблицы " + user_tab + ".");
+    });
+    $('#deleteEntry').on('click', function(event) {
+        let lab = $('#deleteEntry').data('lab');
+        //$(location).attr('href', 'delete.php?tab=' + user_tab + '&id=' + user_id + '&page=' + lab);
+        let link = "{{ url_for('edit.viewcontract', action='delete') }}"
+        $(location).attr('href', link + '/' + user_id);
+    });
+</script>
+{% endblock scripts %}
