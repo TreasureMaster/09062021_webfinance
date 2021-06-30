@@ -4,6 +4,8 @@
 {% block styles %}
 {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='all.min.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='jquery-ui.min.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='jquery-ui.theme.min.css') }}">
 {% endblock styles %}
 
 {% block task %}
@@ -40,7 +42,7 @@
             <td class="text-left small">{{ row['region'] if row['region'] else '' }}</td>
             <td class="text-right small">{{ row['manager'] if row['manager'] else '' }}</td>
             <td class="text-right">
-                {% include 'sections/btn_edit_client.html' %}
+                {% include 'sections/btn_edit_contract.html' %}
             </td>
         </tr>
 
@@ -97,6 +99,12 @@
                 {{ form.comission }}
             </div>
         </div>
+        <div class="row">
+            <div class="form-group col-3">
+                {{ form.lastpay_date.label }}
+                {{ form.lastpay_date }}
+            </div>
+        </div>
         {{ form.hidden_tag() }}
         {{ form.submit() }}
     </form>
@@ -108,9 +116,12 @@
 
 {% block scripts %}
 
+
 <script src="{{ url_for('static', filename='jquery-3.2.1.min.js') }}"></script>
 <script src="{{ url_for('static', filename='popper.min.js') }}"></script>
 {{ super() }}
+<script src="{{ url_for('static', filename='jquery-ui.min.js') }}"></script>
+<script src="{{ url_for('static', filename='datepicker-ru.js') }}"></script>
 <script src="{{ url_for('static', filename='all.min.js') }}"></script>
 <script type="text/javascript">
     let user_id = '';
@@ -135,5 +146,12 @@
         let link = "{{ url_for('edit.viewcontract', action='delete') }}"
         $(location).attr('href', link + '/' + user_id);
     });
+    //$('#datepicker_begin').datepicker( $.datepicker.regional[ "fr" ] );
+    $.datepicker.setDefaults( $.datepicker.regional[ "ru" ] );
+    $('#datepicker_begin, #datepicker_end, #datepicker_transfer').datepicker({
+        changeMonth: true,
+        changeYear: true
+    });
+    //$.datepicker.regional[ "fr" ];
 </script>
 {% endblock scripts %}

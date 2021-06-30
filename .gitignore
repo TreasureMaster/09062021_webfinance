@@ -68,6 +68,8 @@ custom_validators.py
 # all.min.js
 *.min.css
 *.min.js
+datepicker*.js
+leasingco/static/images/
 
 # Run files
 # run.ps1

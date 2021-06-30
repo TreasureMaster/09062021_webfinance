@@ -94,15 +94,16 @@ class ContractForm(FlaskForm):
     number = StringField('Номер контракта',
                                 validators=[InputRequired()],
                                 render_kw={'class': 'form-control'})
-    begin_date = DateField('Дата начала договора', render_kw={'class': 'form-control'})
-    end_date = DateField('Дата окончания договора', render_kw={'class': 'form-control'})
+    begin_date = DateField('Дата начала договора', render_kw={'class': 'form-control', 'id': 'datepicker_begin'})
+    end_date = DateField('Дата окончания договора', render_kw={'class': 'form-control', 'id': 'datepicker_end'})
     client_id = SelectField('Лизингополучатель', render_kw={'class': 'form-control'})
     comission = FloatField('Комиссия', render_kw={'class': 'form-control'})
-    transfer_date = DateField('Дата передачи техники', render_kw={'class': 'form-control'})
+    transfer_date = DateField('Дата передачи техники', render_kw={'class': 'form-control', 'id': 'datepicker_transfer'})
     product_id = SelectField('Название техники', render_kw={'class': 'form-control'})
     quantity = IntegerField('Количество', render_kw={'class': 'form-control'})
     manager = StringField('Менеджер', render_kw={'class': 'form-control'})
     total = IntegerField('Сумма договора', render_kw={'class': 'form-control'})
+    lastpay_date = DateField('Дата последнего платежа', render_kw={'class': 'form-control', 'id': 'datepicker_transfer'})
     id = HiddenField('', default=0)
     submit = SubmitField('Submit',
                           render_kw={

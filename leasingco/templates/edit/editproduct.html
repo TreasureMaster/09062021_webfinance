@@ -25,13 +25,13 @@
     {% for row in products %}
         <tr>
             <td class="text-center">{{ row['category'] if row['category'] else '' }}</td>
-            <td class="text-left">{{ row['prefix'] if row['prefix'] else '' }}</td>
+            <td class="text-center">{{ row['prefix'] if row['prefix'] else '' }}</td>
             <td class="text-center">{{ row['manufacturer'] if row['manufacturer'] else '' }}</td>
-            <td class="text-left text-nowrap">{{ row['model'] if row['model'] else '' }}</td>
+            <td class="text-center text-nowrap">{{ row['model'] if row['model'] else '' }}</td>
             <td class="text-left text-nowrap">{{ row['VIN'] if row['VIN'] else '' }}</td>
             <td class="text-left">{{ row['description'] if row['description'] else '' }}</td>
             <td class="text-center">{{ row['year'] if row['year'] else '' }}</td>
-            <td>
+            <td class="text-right">
                 {% include 'sections/btn_group.html' %}
             </td>
         </tr>

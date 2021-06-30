@@ -16,7 +16,7 @@ class BaseModel:
             self.__values = data
             for key, value in data.items():
                 self.__dictionary['keys'].append(key)
-                self.__dictionary['values'].append(value)
+                self.__dictionary['values'].append(value if value else None)
 
     def reset(self):
         self.__dictionary = {'keys': [], 'values': []}
@@ -42,6 +42,7 @@ class BaseModel:
             ','.join(self.__dictionary['keys']),
             ','.join(['?']*len(self.__dictionary['keys']))
         )
+        print(self.__dictionary['values'])
         self.cursor.execute(query, self.__dictionary['values'])
         self.db.commit()
 

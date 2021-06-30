@@ -44,7 +44,8 @@ def viewproduct(action=None, idx=None):
         product.delete(idx)
         # redirect(url_for('product.viewproduct'))
     products = db.execute("SELECT Product.*, ProductCategory.category FROM Product "
-                          "JOIN ProductCategory ON Product.category_id=ProductCategory.id").fetchall()
+                          "JOIN ProductCategory ON Product.category_id=ProductCategory.id "
+                          "WHERE Product.id <> 0").fetchall()
     # print(products[0])
     if products is None:
         error = 'DB is empty.'
@@ -87,7 +88,7 @@ def viewregion(action=None, idx=None):
         region = Region()
         region.delete(idx)
         # redirect(url_for('product.viewproduct'))
-    regions = cursor.execute("SELECT * FROM Regions ORDER BY region").fetchall()
+    regions = cursor.execute("SELECT * FROM Regions WHERE id <> 0 ORDER BY region").fetchall()
     # print(products[0])
     if regions is None:
         error = 'DB is empty.'
@@ -128,7 +129,7 @@ def viewincorp(action=None, idx=None):
         incorp = Incorporation()
         incorp.delete(idx)
         # redirect(url_for('product.viewproduct'))
-    incorps = cursor.execute("SELECT * FROM Incorporation ORDER BY kind").fetchall()
+    incorps = cursor.execute("SELECT * FROM Incorporation WHERE id <> 0 ORDER BY kind").fetchall()
     # print(products[0])
     if incorps is None:
         error = 'DB is empty.'
@@ -178,7 +179,8 @@ def viewclient(action=None, idx=None):
         # redirect(url_for('product.viewproduct'))
     clients = db.execute("SELECT Clients.*, Regions.region, Incorporation.kind FROM Clients "
                           "JOIN Regions ON Clients.region_id=Regions.id "
-                          "JOIN Incorporation ON Clients.incorp_id=Incorporation.id").fetchall()
+                          "JOIN Incorporation ON Clients.incorp_id=Incorporation.id "
+                          "WHERE Clients.id <> 0").fetchall()
     # print(products[0])
     if clients is None:
         error = 'DB is empty.'
@@ -199,7 +201,7 @@ def viewcontract(action=None, idx=None):
     db = get_db()
     error = None
     cursor = db.cursor()
-    cursor.execute("SELECT Clients.id, CONCAT(Clients.title, ',', Incorporation.kind) AS title FROM Clients "
+    cursor.execute("SELECT Clients.id, CONCAT(Clients.title, ', ', Incorporation.kind) AS title FROM Clients "
                    "JOIN Incorporation ON Clients.incorp_id=Incorporation.id")
     form = ContractForm()
     form.client_id.choices = [(c.id, c.title) for c in cursor.fetchall()]
@@ -229,7 +231,8 @@ def viewcontract(action=None, idx=None):
                            "JOIN Product ON Contract.product_id=Product.id "
                            "JOIN Clients ON Contract.client_id=Clients.id "
                            "JOIN Regions ON Clients.region_id=Regions.id "
-                           "JOIN Incorporation ON Clients.incorp_id=Incorporation.id").fetchall()
+                           "JOIN Incorporation ON Clients.incorp_id=Incorporation.id "
+                           "ORDER BY Contract.number").fetchall()
     # print(products[0])
     if contracts is None:
         error = 'DB is empty.'
