@@ -103,10 +103,21 @@ class ContractForm(FlaskForm):
     quantity = IntegerField('Количество', render_kw={'class': 'form-control'})
     manager = StringField('Менеджер', render_kw={'class': 'form-control'})
     total = IntegerField('Сумма договора', render_kw={'class': 'form-control'})
-    lastpay_date = DateField('Дата последнего платежа', render_kw={'class': 'form-control', 'id': 'datepicker_transfer'})
+    lastpay_date = DateField('Дата последнего платежа', render_kw={'class': 'form-control', 'id': 'datepicker_lastpay'})
     id = HiddenField('', default=0)
     submit = SubmitField('Submit',
                           render_kw={
                               'value': 'Сохранить',
+                              'class': 'btn btn-primary'
+                          })
+
+
+class ChoiceContractForm(FlaskForm):
+
+    contract = SelectField('Выбор контракта', render_kw={'class': 'form-control'})
+    action = HiddenField('', default='choice')
+    submit = SubmitField('Submit',
+                          render_kw={
+                              'value': 'Выбрать',
                               'class': 'btn btn-primary'
                           })

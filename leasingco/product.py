@@ -1,3 +1,4 @@
+import datetime
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, url_for
 )
@@ -5,8 +6,9 @@ from werkzeug.exceptions import abort
 
 # from flaskr.auth import login_required
 from leasingco.db import get_db
-from leasingco.models import Product, Region, Client, Incorporation, Contract
-from leasingco.custom_forms import ProductForm, RegionForm, IncorpForm, ClientForm, ContractForm
+from leasingco.models import Product, Region, Client, Incorporation, Contract, PayModel
+from leasingco.custom_forms import (ProductForm, RegionForm, IncorpForm, ClientForm, ContractForm, ChoiceContractForm)
+from leasingco.payments import Payments
 
 bp = Blueprint('edit', __name__, url_prefix='/edit')
 
@@ -146,7 +148,7 @@ def viewincorp(action=None, idx=None):
 @bp.route('/viewclient/<string:action>', methods=('GET', 'POST'))
 @bp.route('/viewclient/<string:action>/<int:idx>', methods=('GET', 'POST'))
 def viewclient(action=None, idx=None):
-    print(request.url)
+    # print(request.url)
     db = get_db()
     error = None
     cursor = db.cursor()
@@ -163,10 +165,6 @@ def viewclient(action=None, idx=None):
         if request.method == 'POST':
             client.update(request.form)
         client.select(idx)
-        # print(form['model'].data)
-        # form.model.data = 'model test'
-        # print(form.model.data)
-        # print(form['model'].data)
         form.region_id.default = client.get_row()['region_id']
         form.incorp_id.default = client.get_row()['incorp_id']
         form.process()
@@ -176,12 +174,10 @@ def viewclient(action=None, idx=None):
     if action == 'delete':
         client = Client()
         client.delete(idx)
-        # redirect(url_for('product.viewproduct'))
     clients = db.execute("SELECT Clients.*, Regions.region, Incorporation.kind FROM Clients "
                           "JOIN Regions ON Clients.region_id=Regions.id "
                           "JOIN Incorporation ON Clients.incorp_id=Incorporation.id "
                           "WHERE Clients.id <> 0").fetchall()
-    # print(products[0])
     if clients is None:
         error = 'DB is empty.'
     if error is not None:
@@ -197,7 +193,6 @@ def viewclient(action=None, idx=None):
 @bp.route('/viewcontract/<string:action>', methods=('GET', 'POST'))
 @bp.route('/viewcontract/<string:action>/<int:idx>', methods=('GET', 'POST'))
 def viewcontract(action=None, idx=None):
-    # print(request.url)
     db = get_db()
     error = None
     cursor = db.cursor()
@@ -224,7 +219,6 @@ def viewcontract(action=None, idx=None):
     if action == 'delete':
         contract = Contract()
         contract.delete(idx)
-        # redirect(url_for('product.viewproduct'))
     contracts = db.execute("SELECT Contract.*, CONCAT(Clients.title, ', ', Incorporation.kind) AS title, "
                            "LTRIM(CONCAT(Product.prefix, ' ', Product.manufacturer, ' ', Product.model)) as tech, "
                            "Regions.region FROM Contract "
@@ -233,7 +227,6 @@ def viewcontract(action=None, idx=None):
                            "JOIN Regions ON Clients.region_id=Regions.id "
                            "JOIN Incorporation ON Clients.incorp_id=Incorporation.id "
                            "ORDER BY Contract.number").fetchall()
-    # print(products[0])
     if contracts is None:
         error = 'DB is empty.'
     if error is not None:
@@ -243,3 +236,58 @@ def viewcontract(action=None, idx=None):
         return redirect(url_for('edit.viewcontract'))
     
     return render_template('edit/editcontract.html', contracts=contracts, form=form)
+
+
+@bp.route('/viewpays', methods=('GET', 'POST'))
+@bp.route('/viewpays/<string:action>', methods=('GET', 'POST'))
+@bp.route('/viewpays/<string:action>/<int:idx>', methods=('GET', 'POST'))
+def viewpays(action=None, idx=None):
+    MONTHS = [None, 'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
+    db = get_db()
+    error = None
+    cursor = db.cursor()
+    cursor.execute("SELECT Contract.id, CONCAT('Договор № ', Contract.number, ' от ', Contract.begin_date, ' с ', "
+                           "CONCAT(Clients.title, ', ', Incorporation.kind), ' на сумму ', Contract.total, ' руб.') "
+                           "AS title FROM Contract "
+                           "JOIN Clients ON Contract.client_id=Clients.id "
+                           "JOIN Incorporation ON Clients.incorp_id=Incorporation.id "
+                           "ORDER BY Contract.number")
+    choice_form = ChoiceContractForm()
+    choice_form.contract.choices = [(c.id, c.title) for c in cursor.fetchall()]
+    p = {}
+    years = {}
+    current_contract = '0'
+    marked = {}
+    if request.method == 'POST' and action is None:
+        current_contract = request.form['contract']
+        if request.form['action'] == 'table':
+            pay = PayModel()
+            pay.update(request.form)
+        choice_form.contract.default = current_contract
+        choice_form.process()
+        contract = Contract()
+        contract.select(request.form['contract'])
+        payments = Payments(
+            contract.get_row()['total'],
+            contract.get_row()['begin_date'],
+            contract.get_row()['end_date'],
+            contract.get_row()['begin_date'],
+        ).get_payments()[1:]
+        years = {d.year for d in payments}
+        p = {key:{k:None for k in range(1, 13)} for key in years}
+        for data in payments:
+            p[data.year][data.month] = data
+        pay = PayModel()
+        pay.select(request.form['contract'])
+        marked = pay.get_row()
+    if error is not None:
+        flash(error)
+        return redirect(url_for('index'))
+    
+    return render_template('edit/editpays.html',
+                            choice_form=choice_form,
+                            payments=p,
+                            years=years, months=MONTHS,
+                            today=datetime.date.today(),
+                            current_contract=current_contract,
+                            marked = marked)

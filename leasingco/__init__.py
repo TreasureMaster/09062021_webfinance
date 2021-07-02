@@ -40,6 +40,9 @@ def create_app(test_config=None):
 
     from . import product
     app.register_blueprint(product.bp)
+
+    from . import leasing
+    app.register_blueprint(leasing.bp)
     # app.add_url_rule('/', endpoint='index')
 
     # простая страница, которая здоровается

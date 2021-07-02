@@ -49,19 +49,30 @@
                             </div>
                         </li>
                         <li class="nav-item dropdown mr-4">
-                            <a href="#" class="nav-link dropdown-toggle text-dark" id="navbarDropdownKurs"
+                            <a href="#" class="nav-link dropdown-toggle text-dark" id="navbarDropdownLeas"
+                                role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Лизинговый портфель
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdownLeas">
+                                <a href="{{ url_for('leasing.viewdate') }}" class="dropdown-item">Лизинговый портфель на дату</a>
+                                <a href="#" class="dropdown-item">пусто</a>
+                                <a href="#" class="dropdown-item">пусто</a>
+                                <a href="#" class="dropdown-item">пусто</a>
+                                <a href="#" class="dropdown-item">пусто</a>
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown mr-4">
+                            <a href="#" class="nav-link dropdown-toggle text-dark" id="navbarDropdownEdit"
                                 role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 Редактировать данные
                             </a>
-                            <div class="dropdown-menu" aria-labelledby="navbarDropdownKurs">
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdownEdit">
                                 <a href="{{ url_for('edit.viewproduct') }}" class="dropdown-item">Редактировать технику</a>
                                 <a href="{{ url_for('edit.viewregion') }}" class="dropdown-item">Редактировать регион</a>
                                 <a href="{{ url_for('edit.viewincorp') }}" class="dropdown-item">Редактировать организационно-правовую форму</a>
                                 <a href="{{ url_for('edit.viewclient') }}" class="dropdown-item">Редактировать лизингополучателя</a>
                                 <a href="{{ url_for('edit.viewcontract') }}" class="dropdown-item">Редактировать договор</a>
-                                <a href="#" class="dropdown-item">Задание №6.1: запросы 1</a>
-                                <a href="#" class="dropdown-item">Задание №6.2: запросы 2</a>
-                                <a href="#" class="dropdown-item">Задание №7</a>
+                                <a href="{{ url_for('edit.viewpays') }}" class="dropdown-item">Редактировать платежи</a>
                             </div>
                         </li>
                     </ul>
