@@ -16,6 +16,7 @@ class Payments:
             self.last_payment = self.convert_date(last)
         else:
             self.last_payment = self.begin_contract
+        # print(self.last_payment)
         self.overdue = {
             'upto30': 0,
             '30-60': 0,
@@ -50,7 +51,7 @@ class Payments:
     def get_lastRequiredDate(self, input_date):
         """Определяет последнюю дату платежа меньше заданной даты."""
         # current_date = self.convert_date(current)
-        nearest_list = [i for i in self.get_payments() if i < input_date]
+        nearest_list = [i for i in self.get_payments() if i <= input_date]
         nearest_data = min(nearest_list, key=lambda x: abs(x - input_date)) if nearest_list else self.begin_contract
         return nearest_data
 
@@ -61,12 +62,17 @@ class Payments:
         """Лист пропущенных платежей."""
         # current_date = self.convert_date(current)
         a = [i for i in self.get_payments() if self.get_lastRequiredDate(self.last_payment) <= i < self.current_date]
-        a.append(self.current_date)
+        # a.append(self.current_date)
+        if len(a) >= 1:
+            a = a[1:]
+            # if len(a) >= 1:
+            #     a.append(self.current_date)
+        # print(a)
         return a
 
     def set_overdue(self):
         """Расчет сумм пропущенных платежей."""
-        d = self.get_overdueList(self.current_date)
+        d = self.get_overdueList()
         if len(d) > 4:
             self.overdue['over90'] = (d[-4] - d[0]).days * self.get_priceDay()
         if len(d) > 3:
@@ -78,6 +84,7 @@ class Payments:
 
     def get_overdue(self):
         """Получение пропущенных платежей."""
+        self.set_overdue()
         return self.overdue
 
     def get_remaining(self):

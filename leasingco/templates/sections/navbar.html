@@ -1,25 +1,3 @@
-<!-- <nav class="navbar navbar-expand-md navbar-light bg-light justify-content-md-between">
-    <div class="pl-3">
-        <strong><a href="{{ url_for('index') }}" class="navbar-brand text-info">Flaskr</a></strong>
-    </div>
-    <button class="navbar-toggler" type="button" data-toggle="collapse"
-            data-target="#navbarTopContent" aria-controls="navbarSupportedContent"
-            aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse flex-md-grow-0" id="navbarTopContent">
-        <ul class="navbar-nav pl-3 pl-md-0">
-            {# Объект g и функция url_for() автоматически доступны в шаблонах #}
-            {% if g.user %}
-            <li class="nav-item navbar-text"><span><strong>Test</strong></span></li>
-            <li class="nav-item"><a href="#" class="nav-link">Log Out</a></li>
-            {% else %}
-            <li class="nav-item"><a href="#" class="nav-link">Register</a></li>
-            <li class="nav-item"><a href="#" class="nav-link">Log In</a></li>
-            {% endif %}
-        </ul>
-    </div>
-</nav> -->
 <header class="container">
     <nav class="navbar navbar-expand-lg flex-column align-items-start pr-0 navbar-light bg-light">
         <div class="row w-100">
@@ -55,8 +33,8 @@
                             </a>
                             <div class="dropdown-menu" aria-labelledby="navbarDropdownLeas">
                                 <a href="{{ url_for('leasing.viewdate') }}" class="dropdown-item">Лизинговый портфель на дату</a>
-                                <a href="#" class="dropdown-item">пусто</a>
-                                <a href="#" class="dropdown-item">пусто</a>
+                                <a href="{{ url_for('leasing.viewregions') }}" class="dropdown-item">Лизинговый портфель по регионам</a>
+                                <a href="{{ url_for('leasing.viewtransfer') }}" class="dropdown-item">Передача техники в лизинг</a>
                                 <a href="#" class="dropdown-item">пусто</a>
                                 <a href="#" class="dropdown-item">пусто</a>
                             </div>
