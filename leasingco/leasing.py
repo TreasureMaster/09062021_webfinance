@@ -1,4 +1,4 @@
-import datetime
+import datetime, copy
 
 from dateutil.parser import parse
 from flask import (
@@ -191,12 +191,15 @@ def viewregions(date=None):
 # @bp.route('/viewtransfer/<string:action>', methods=('GET', 'POST'))
 # @bp.route('/viewtransfer/<string:action>/<int:idx>', methods=('GET', 'POST'))
 def viewtransfer(action=None, idx=None):
+    MONTHS = [None, 'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
     db = get_db()
     error = None
     cursor = db.cursor()
     year_choice = datetime.date.today().year
     print(year_choice)
     form = TransferForm()
+    quarters = {}
+    month_mark = True
     # cursor.execute("SELECT Clients.id, CONCAT(Clients.title, ', ', Incorporation.kind) AS title FROM Clients "
     #                "JOIN Incorporation ON Clients.incorp_id=Incorporation.id")
     # form = ContractForm()
@@ -204,11 +207,20 @@ def viewtransfer(action=None, idx=None):
     # cursor.execute("SELECT id, LTRIM(CONCAT(prefix, ' ', manufacturer, ' ', model)) as tech FROM Product")
     # form.product_id.choices = [(c.id, c.tech) for c in cursor.fetchall()]
     if request.method == 'POST' and action is None:
-        print(request.form)
+        # print(request.form)
         year_choice = parse(request.form['transfer_date'], dayfirst=True).date().year
         comms_query = ' '
+        groupby_query = ''
+        key_select = ''
         if request.form['table_view'] == 'менеджеры':
             comms_query = ", AVG(comission) AS manager_comms "
+            groupby_query = "manager"
+            select_query = "manager"
+            key_select = 'manager'
+        elif request.form['table_view'] != 'менеджеры':
+            select_query = "DATEPART(mm, begin_date) AS month"
+            groupby_query = "DATEPART(mm, begin_date)"
+            key_select = 'month'
         # contract = Contract()
         # contract.insert(request.form)
     if action == 'update':
@@ -236,23 +248,70 @@ def viewtransfer(action=None, idx=None):
                    "WHERE DATEPART(yyyy, Contract.begin_date) = '{}' ".format(year_choice))
     contracts = [dict(zip([column[0] for column in cursor.description], row)) for row in cursor.fetchall()]
     print(contracts[0])
-    cursor.execute("SELECT manager, "
+    cursor.execute("SELECT {}, "
 		           "COUNT(number) AS manager_contracts, "
 		           "SUM(total) AS manager_total, "
 		           "SUM(quantity) AS manager_qty"
 		           "{}"
                    "FROM Contract "
                    "WHERE DATEPART(yyyy, begin_date) = '{}' "
-                   "GROUP BY manager".format(comms_query, year_choice))
+                   "GROUP BY {}".format(select_query, comms_query, year_choice, groupby_query))
     managers_pred = [dict(zip([column[0] for column in cursor.description], row)) for row in cursor.fetchall()]
+    print(managers_pred)
     managers = {}
     for manager in managers_pred:
-        surname = manager['manager']
+        surname = manager[key_select]
         managers[surname] = manager
-        managers[surname].pop('manager', None)
+        managers[surname].pop(key_select, None)
         managers[surname]['contracts'] = []
-    for contract in contracts:
-        managers[contract['manager']]['contracts'].append(contract)
+    print(managers)
+    if key_select == 'manager':
+        for contract in contracts:
+            managers[contract['manager']]['contracts'].append(contract)
+    elif key_select != 'manager':
+        for contract in contracts:
+            month = contract['begin_date'].month
+            managers[month]['contracts'].append(contract)
+        if request.form['table_view'] == 'кварталы':
+            month_mark = False
+            for month in managers:
+                if month in {1, 2, 3}:
+                    if 'Квартал I' in quarters:
+                        for entry in managers[month]:
+                            if entry == 'contracts':
+                                quarters['Квартал I'][entry].extend(managers[month][entry])
+                            else:
+                                quarters['Квартал I'][entry] += managers[month][entry]
+                    else:
+                        quarters['Квартал I'] = copy.deepcopy(managers[month])
+                elif month in {4, 5, 6}:
+                    if 'Квартал II' in quarters:
+                        for entry in managers[month]:
+                            if entry == 'contracts':
+                                quarters['Квартал II'][entry].extend(managers[month][entry])
+                            else:
+                                quarters['Квартал II'][entry] += managers[month][entry]
+                    else:
+                        quarters['Квартал II'] = copy.deepcopy(managers[month])
+                elif month in {7, 8, 9}:
+                    if 'Квартал III' in quarters:
+                        for entry in managers[month]:
+                            if entry == 'contracts':
+                                quarters['Квартал III'][entry].extend(managers[month][entry])
+                            else:
+                                quarters['Квартал III'][entry] += managers[month][entry]
+                    else:
+                        quarters['Квартал III'] = copy.deepcopy(managers[month])
+                elif month in {10, 11, 12}:
+                    if 'Квартал IV' in quarters:
+                        for entry in managers[month]:
+                            if entry == 'contracts':
+                                quarters['Квартал IV'][entry].extend(managers[month][entry])
+                            else:
+                                quarters['Квартал IV'][entry] += managers[month][entry]
+                    else:
+                        quarters['Квартал IV'] = copy.deepcopy(managers[month])
+    managers = quarters or managers
     managers_keys = list(managers.keys())
     managers_keys.sort()
     # print(managers_keys)
@@ -265,5 +324,7 @@ def viewtransfer(action=None, idx=None):
     # if request.method == 'POST' or action == 'delete':
     #     return redirect(url_for('leasing.viewtransfer'))
     
-    return render_template('reports/portfoliotransfers.html', contracts=contracts, form=form, year_choice=year_choice,
-                                                              managers=managers, managers_keys=managers_keys)
+    return render_template('reports/portfolio{}s.html'.format(key_select),
+                            contracts=contracts, form=form, year_choice=year_choice,
+                            managers=managers, managers_keys=managers_keys, months=MONTHS,
+                            month_mark=month_mark)
