@@ -6,8 +6,9 @@ from werkzeug.exceptions import abort
 
 # from flaskr.auth import login_required
 from leasingco.db import get_db
-from leasingco.models import Product, Region, Client, Incorporation, Contract, PayModel
-from leasingco.custom_forms import (ProductForm, RegionForm, IncorpForm, ClientForm, ContractForm, ChoiceContractForm)
+from leasingco.models import Product, Region, Client, Incorporation, Contract, PayModel, Storage
+from leasingco.custom_forms import (ProductForm, RegionForm,
+        IncorpForm, ClientForm, ContractForm, ChoiceContractForm, StorageForm)
 from leasingco.payments import Payments
 
 bp = Blueprint('edit', __name__, url_prefix='/edit')
@@ -291,3 +292,46 @@ def viewpays(action=None, idx=None):
                             today=datetime.date.today(),
                             current_contract=current_contract,
                             marked = marked)
+
+
+@bp.route('/viewstorage', methods=('GET', 'POST'))
+@bp.route('/viewstorage/<string:action>', methods=('GET', 'POST'))
+@bp.route('/viewstorage/<string:action>/<int:idx>', methods=('GET', 'POST'))
+def viewstorage(action=None, idx=None):
+    db = get_db()
+    error = None
+    cursor = db.cursor()
+    form = StorageForm()
+    cursor.execute("SELECT id, TRIM(CONCAT(prefix, ' ', manufacturer, ' ', model, ' ', VIN, ' ', description)) as tech FROM Product")
+    form.product_id.choices = [(c.id, c.tech) for c in cursor.fetchall()]
+    if request.method == 'POST' and action is None:
+        contract = Storage()
+        contract.insert(request.form)
+    if action == 'update':
+        contract = Storage()
+        if request.method == 'POST':
+            contract.update(request.form)
+        contract.select(idx)
+        # form.client_id.default = contract.get_row()['client_id']
+        form.product_id.default = contract.get_row()['product_id']
+        form.process()
+        for key, value in contract.get_row().items():
+            if key not in {'client_id', 'product_id'}:
+                setattr(form[key], 'data', value)
+    if action == 'delete':
+        contract = Storage()
+        contract.delete(idx)
+    storage = db.execute("SELECT Storage.*, "
+                           "TRIM(CONCAT(prefix, ' ', manufacturer, ' ', model, ' ', VIN, ' ', description)) as tech "
+                           "FROM Storage "
+                           "JOIN Product ON Storage.product_id=Product.id "
+                           "ORDER BY receipt_date").fetchall()
+    if storage is None:
+        error = 'DB is empty.'
+    if error is not None:
+        flash(error)
+        return redirect(url_for('index'))
+    if request.method == 'POST' or action == 'delete':
+        return redirect(url_for('edit.viewstorage'))
+    
+    return render_template('edit/editstorage.html', storage=storage, form=form)

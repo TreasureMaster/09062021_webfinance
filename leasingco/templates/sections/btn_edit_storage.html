@@ -1,0 +1,14 @@
+{% block btn_group %}
+
+<div class="btn-group" role="group" aria-label="Basic action">
+    {# редактирование #}
+    <a role="button" class="btn btn-success" href="{{ url_for('edit.viewstorage', action='update', idx=row['id']) }}">
+        <i class="fa fa-edit fa-lg"></i></a>
+    {# удаление, вызов модального окна #}
+    <a role="button" class="btn btn-danger" href="#"
+        data-toggle="modal" data-target="#exampleModalCenter" data-id="{{ row['id'] }}" data-tab="Storage"
+        data-desc="{{ 'транспортном средстве {} с датой поступления {} и датой расхода {}'.format(row['tech'], row['receipt_date'], row['expense_date']) }}">
+        <i class="fa fa-window-close fa-lg"></i></a>
+</div>
+
+{% endblock %}

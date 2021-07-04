@@ -147,3 +147,18 @@ class TransferForm(FlaskForm):
                               'value': 'Выбрать год и тип вывода',
                               'class': 'btn btn-primary'
                           })
+
+
+class StorageForm(FlaskForm):
+
+    product_id = SelectField('Наименование техники', render_kw={'class': 'form-control'})
+    qty = IntegerField('Количество', render_kw={'class': 'form-control'})
+    total = IntegerField('Стоимость', render_kw={'class': 'form-control'})
+    receipt_date = DateField('Дата поступления', render_kw={'class': 'form-control', 'id': 'datepicker_receipt'})
+    expense_date = DateField('Дата расхода', render_kw={'class': 'form-control', 'id': 'datepicker_expense'})
+    id = HiddenField('', default=0)
+    submit = SubmitField('Submit',
+                          render_kw={
+                              'value': 'Сохранить',
+                              'class': 'btn btn-primary'
+                          })

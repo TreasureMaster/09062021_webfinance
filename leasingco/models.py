@@ -131,6 +131,12 @@ class Contract(BaseModel):
         super().__init__(data, 'Contract')
 
 
+class Storage(BaseModel):
+
+    def __init__(self, data=None):
+        super().__init__(data, 'Storage')
+
+
 class PayModel:
 
     def __init__(self, data=None):

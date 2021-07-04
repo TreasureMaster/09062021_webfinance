@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='all.min.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='jquery-ui.min.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='jquery-ui.theme.min.css') }}">
+{% endblock styles %}
+
+{% block task %}
+
+<h1 class="text-center">Редактирование склада</h1>
+
+<table class="table table-hover table-sm">
+    <thead class="table-success">
+        <th scope="col" class="text-center">Наименование</th>
+        <th scope="col" class="text-center text-nowrap">Кол-во</th>
+        <th scope="col" class="text-center">Стоимость</th>
+        <th scope="col" class="text-center">Дата поступления</th>
+        <th scope="col" class="text-center">Дата расхода</th>
+        <th scope="col" class="text-center">Действия</th>
+    </thead>
+    <tbody>
+    {% for row in storage %}
+        <tr>
+            <td class="text-left small">{{ row['tech'] if row['tech'] else '' }}</td>
+            <td class="text-center">{{ row['qty'] if row['qty'] else '' }}</td>
+            <td class="text-right text-nowrap">{{ '{:,f}'.format(row['total']).replace(',', ' ') if row['total'] else '' }}</td>
+            {#<td class="text-right">{{ row['total'] if row['total'] else '' }}</td>#}
+            <td class="text-center text-nowrap">{{ row['receipt_date'].strftime('%d.%m.%Y') if row['receipt_date'] else '' }}</td>
+            <td class="text-center text-nowrap">{{ row['expense_date'].strftime('%d.%m.%Y') if row['expense_date'] else '' }}</td>
+            <td class="text-right">
+                {% include 'sections/btn_edit_storage.html' %}
+            </td>
+        </tr>
+
+    {% endfor %}
+</table>
+
+<h2>Добавление новой или редактирование старой техники на складе</h2>
+<div class="mt-3 container" id="editStorage">
+    <form action="#" method="POST" class="my-3">
+        <div class="row">
+            <div class="form-group col-6">
+                {{ form.product_id.label }}
+                {{ form.product_id }}
+            </div>
+            <div class="form-group col-3">
+                {{ form.qty.label }}
+                {{ form.qty }}
+            </div>
+            <div class="form-group col-3">
+                {{ form.total.label }}
+                {{ form.total }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-6">
+                {{ form.receipt_date.label }}
+                {{ form.receipt_date }}
+            </div>
+            <div class="form-group col-6">
+                {{ form.expense_date.label }}
+                {{ form.expense_date }}
+            </div>
+        </div>
+        {{ form.hidden_tag() }}
+        {{ form.submit() }}
+    </form>
+</div>
+
+{% include 'sections/modals.html' %}
+
+{% endblock %}
+
+{% block scripts %}
+
+
+<script src="{{ url_for('static', filename='jquery-3.2.1.min.js') }}"></script>
+<script src="{{ url_for('static', filename='popper.min.js') }}"></script>
+{{ super() }}
+<script src="{{ url_for('static', filename='jquery-ui.min.js') }}"></script>
+<script src="{{ url_for('static', filename='datepicker-ru.js') }}"></script>
+<script src="{{ url_for('static', filename='all.min.js') }}"></script>
+<script type="text/javascript">
+    let user_id = '';
+    let user_tab = '';
+    $('#exampleModalCenter').on('show.bs.modal', function(event) {
+        console.log('in modal')
+        user_id = $(event.relatedTarget).data('id');
+        user_tab = $(event.relatedTarget).data('tab');
+        let user_desc = $(event.relatedTarget).data('desc');
+        if (user_tab == 'firms') {
+            user_desc = "фирме " + user_desc;
+        } else if (user_tab == 'products') {
+            user_desc = "продукте " + user_desc;
+        } else if (user_tab == 'orders') {
+            user_desc = "заказе от " + user_desc;
+        }
+        $("#modalText").html("Будет удалена запись о " + user_desc + " из таблицы " + user_tab + ".");
+    });
+    $('#deleteEntry').on('click', function(event) {
+        let lab = $('#deleteEntry').data('lab');
+        //$(location).attr('href', 'delete.php?tab=' + user_tab + '&id=' + user_id + '&page=' + lab);
+        let link = "{{ url_for('edit.viewstorage', action='delete') }}"
+        $(location).attr('href', link + '/' + user_id);
+    });
+    $.datepicker.setDefaults( $.datepicker.regional[ "ru" ] );
+    $('#datepicker_receipt, #datepicker_expense').datepicker({
+        changeMonth: true,
+        changeYear: true,
+        maxDate: "today",
+        showButtonPanel: true
+    });
+</script>
+{% endblock scripts %}
