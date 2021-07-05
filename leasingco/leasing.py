@@ -10,7 +10,7 @@ from werkzeug.exceptions import abort
 from leasingco.db import get_db
 from leasingco.models import Product, Region, Client, Incorporation, Contract
 from leasingco.custom_forms import ProductForm, RegionForm, IncorpForm, ClientForm, ContractForm
-from leasingco.custom_forms import PortfolioDateForm, TransferForm
+from leasingco.custom_forms import PortfolioDateForm, TransferForm, StorageGroupForm
 
 from leasingco.payments import Payments
 
@@ -188,8 +188,6 @@ def viewregions(date=None):
 
 
 @bp.route('/viewtransfer', methods=('GET', 'POST'))
-# @bp.route('/viewtransfer/<string:action>', methods=('GET', 'POST'))
-# @bp.route('/viewtransfer/<string:action>/<int:idx>', methods=('GET', 'POST'))
 def viewtransfer(action=None, idx=None):
     MONTHS = [None, 'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
     db = get_db()
@@ -200,43 +198,21 @@ def viewtransfer(action=None, idx=None):
     form = TransferForm()
     quarters = {}
     month_mark = True
-    # cursor.execute("SELECT Clients.id, CONCAT(Clients.title, ', ', Incorporation.kind) AS title FROM Clients "
-    #                "JOIN Incorporation ON Clients.incorp_id=Incorporation.id")
-    # form = ContractForm()
-    # form.client_id.choices = [(c.id, c.title) for c in cursor.fetchall()]
-    # cursor.execute("SELECT id, LTRIM(CONCAT(prefix, ' ', manufacturer, ' ', model)) as tech FROM Product")
-    # form.product_id.choices = [(c.id, c.tech) for c in cursor.fetchall()]
+    comms_query = ", AVG(comission) AS manager_comms "
+    groupby_query = "manager"
+    select_query = "manager"
+    key_select = 'manager'
     if request.method == 'POST' and action is None:
         # print(request.form)
-        year_choice = parse(request.form['transfer_date'], dayfirst=True).date().year
-        comms_query = ' '
-        groupby_query = ''
-        key_select = ''
+        if request.form['transfer_date']:
+            year_choice = parse(request.form['transfer_date'], dayfirst=True).date().year
         if request.form['table_view'] == 'менеджеры':
-            comms_query = ", AVG(comission) AS manager_comms "
-            groupby_query = "manager"
-            select_query = "manager"
-            key_select = 'manager'
+            pass
         elif request.form['table_view'] != 'менеджеры':
+            comms_query = ' '
             select_query = "DATEPART(mm, begin_date) AS month"
             groupby_query = "DATEPART(mm, begin_date)"
             key_select = 'month'
-        # contract = Contract()
-        # contract.insert(request.form)
-    if action == 'update':
-        contract = Contract()
-        # if request.method == 'POST':
-        #     contract.update(request.form)
-        contract.select(idx)
-        # form.client_id.default = contract.get_row()['client_id']
-        # form.product_id.default = contract.get_row()['product_id']
-        # form.process()
-        # for key, value in contract.get_row().items():
-        #     if key not in {'client_id', 'product_id'}:
-        #         setattr(form[key], 'data', value)
-    # if action == 'delete':
-    #     contract = Contract()
-    #     contract.delete(idx)
     # "WHERE DATEPART(yyyy, Contract.end_date) >= '{}' AND DATEPART(yyyy, Contract.begin_date) <= '{}'"
     cursor.execute("SELECT Contract.*, CONCAT(Clients.title, ', ', Incorporation.kind) AS title, "
                    "LTRIM(CONCAT(Product.prefix, ' ', Product.manufacturer, ' ', Product.model)) as tech, "
@@ -328,3 +304,125 @@ def viewtransfer(action=None, idx=None):
                             contracts=contracts, form=form, year_choice=year_choice,
                             managers=managers, managers_keys=managers_keys, months=MONTHS,
                             month_mark=month_mark)
+
+
+@bp.route('/viewstorage', methods=('GET', 'POST'))
+def viewstorage(action=None, idx=None):
+    db = get_db()
+    error = None
+    storage = db.execute("SELECT Storage.*, "
+                           "TRIM(CONCAT(prefix, ' ', manufacturer, ' ', model, ' ', VIN, ' ', description)) as tech "
+                           "FROM Storage "
+                           "JOIN Product ON Storage.product_id=Product.id "
+                           "ORDER BY receipt_date").fetchall()
+    print(storage[0])
+    summ = {}
+    summ['begin_qty'] = sum(row[2] for row in storage)
+    summ['begin_total'] = sum(row[3] for row in storage)
+    summ['end_qty'] = sum(row[2] for row in storage if row[5] is not None)
+    summ['end_total'] = sum(row[3] for row in storage if row[5] is not None)
+    summ['remain_qty'] = summ['begin_qty'] - summ['end_qty']
+    summ['remain_total'] = summ['begin_total'] - summ['end_total']
+    if storage is None:
+        error = 'DB is empty.'
+    if error is not None:
+        flash(error)
+        return redirect(url_for('index'))
+    
+    return render_template('reports/storage.html', storage=storage, summ=summ)
+
+
+@bp.route('/viewstorbycat', methods=('GET', 'POST'))
+def viewstorbycat(action=None, idx=None):
+    db = get_db()
+    error = None
+    cursor = db.cursor()
+    cursor.execute("SELECT Storage.*, ProductCategory.category, Product.manufacturer, "
+                           "TRIM(CONCAT(prefix, ' ', manufacturer, ' ', model, ' ', VIN, ' ', description)) as tech "
+                           "FROM Storage "
+                           "JOIN Product ON Storage.product_id=Product.id "
+                           "JOIN ProductCategory ON Product.category_id=ProductCategory.id "
+                           "ORDER BY receipt_date")
+    storage = [dict(zip([column[0] for column in cursor.description], row)) for row in cursor.fetchall()]
+    print(storage[0])
+    storage_keys = {row['category']: [] for row in storage}
+    storage_results = {row['category']: {'qty': 0, 'begin': 0, 'end': 0, 'qty_end': 0, 'remain': 0, 'remain_qty': 0} for row in storage}
+    print(storage_keys)
+    for row in storage:
+        storage_keys[row['category']].append(row)
+        storage_results[row['category']]['qty'] += row['qty']
+        storage_results[row['category']]['begin'] += row['total']
+        if row['expense_date'] is not None:
+            storage_results[row['category']]['end'] += row['total']
+            storage_results[row['category']]['qty_end'] += row['qty']
+    for row in storage_results.values():
+        row['remain_qty'] = row['qty'] - row['qty_end']
+        row['remain'] = row['begin'] - row['end']
+    summ = {
+        'qty': sum(row['qty'] for row in storage_results.values()),
+        'begin': sum(row['begin'] for row in storage_results.values()),
+        'qty_end': sum(row['qty_end'] for row in storage_results.values()),
+        'end': sum(row['end'] for row in storage_results.values()),
+        'remain': sum(row['remain'] for row in storage_results.values()),
+        'remain_qty': sum(row['remain_qty'] for row in storage_results.values())
+    }
+
+    if storage is None:
+        error = 'DB is empty.'
+    if error is not None:
+        flash(error)
+        return redirect(url_for('index'))
+    
+    return render_template('reports/storagebycategory.html', storage=storage_keys, results=storage_results, summ=summ)
+
+
+@bp.route('/viewturnover', methods=('GET', 'POST'))
+def viewturnover(action=None, idx=None):
+    db = get_db()
+    error = None
+    cursor = db.cursor()
+    cursor.execute("SELECT Storage.*, ProductCategory.category, Product.manufacturer, "
+                           "TRIM(CONCAT(prefix, ' ', manufacturer, ' ', model, ' ', VIN, ' ', description)) as tech "
+                           "FROM Storage "
+                           "JOIN Product ON Storage.product_id=Product.id "
+                           "JOIN ProductCategory ON Product.category_id=ProductCategory.id "
+                           "ORDER BY receipt_date")
+    storage = [dict(zip([column[0] for column in cursor.description], row)) for row in cursor.fetchall()]
+    print(storage[0])
+    storage_keys = {row['category']: [] for row in storage}
+    storage_results = {row['category']: {'qty': 0, 'begin': 0, 'end': 0, 'qty_end': 0} for row in storage}
+    print(storage_keys)
+    for row in storage:
+        storage_keys[row['category']].append(row)
+        storage_results[row['category']]['qty'] += row['qty']
+        storage_results[row['category']]['begin'] += row['total']
+        if row['expense_date'] is not None:
+            storage_results[row['category']]['end'] += row['total']
+            storage_results[row['category']]['qty_end'] += row['qty']
+    # for row in storage_results.values():
+    #     row['remain_qty'] = row['qty'] - row['qty_end']
+    #     row['remain'] = row['begin'] - row['end']
+    for rows in storage_keys.values():
+        for row in rows:
+            if row['expense_date'] is not None:
+                row['stand_days'] = (row['expense_date'] - row['receipt_date']).days
+                row['remain_days'] = None
+            else:
+                row['stand_days'] = None
+                row['remain_days'] = (datetime.date.today() - row['receipt_date']).days
+    summ = {
+        'qty': sum(row['qty'] for row in storage_results.values()),
+        'begin': sum(row['begin'] for row in storage_results.values()),
+        'qty_end': sum(row['qty_end'] for row in storage_results.values()),
+        'end': sum(row['end'] for row in storage_results.values()),
+        # 'remain': sum(row['remain'] for row in storage_results.values()),
+        # 'remain_qty': sum(row['remain_qty'] for row in storage_results.values())
+    }
+
+    if storage is None:
+        error = 'DB is empty.'
+    if error is not None:
+        flash(error)
+        return redirect(url_for('index'))
+    
+    return render_template('reports/turnover.html', storage=storage_keys, results=storage_results, summ=summ)

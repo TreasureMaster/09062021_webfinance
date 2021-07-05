@@ -162,3 +162,16 @@ class StorageForm(FlaskForm):
                               'value': 'Сохранить',
                               'class': 'btn btn-primary'
                           })
+
+
+class StorageGroupForm(FlaskForm):
+
+    # transfer_date = DateField('Выбор года действия лизингового портфеля', render_kw={'class': 'form-control', 'id': 'datepicker_begin'})
+    table_view = RadioField('', choices=['без группировки', 'по категориям', 'по производителю'], default='без группировки',
+                            render_kw={'class': 'form-check form-check-input list-unstyled d-flex list-group-horizontal justify-content-around w-100'})
+    # action = HiddenField('', default='portfolio_date')
+    submit = SubmitField('Submit',
+                          render_kw={
+                              'value': 'Выбрать тип группировки',
+                              'class': 'btn btn-primary'
+                          })

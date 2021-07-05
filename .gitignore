@@ -62,6 +62,7 @@ test_*.py
 # Temp hide
 storage.py
 custom_validators.py
+*.zip
 
 # Styles, js files
 # all.min.css

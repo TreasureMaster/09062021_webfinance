@@ -36,7 +36,17 @@
                                 <a href="{{ url_for('leasing.viewregions') }}" class="dropdown-item">Лизинговый портфель по контрагентам</a>
                                 <a href="{{ url_for('leasing.viewtransfer') }}" class="dropdown-item">Передача техники в лизинг</a>
                                 <a href="#" class="dropdown-item">пусто</a>
-                                <a href="#" class="dropdown-item">пусто</a>
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown mr-4">
+                            <a href="#" class="nav-link dropdown-toggle text-dark" id="navbarDropdownStorage"
+                                role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Склад
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdownStorage">
+                                <a href="{{ url_for('leasing.viewstorage') }}" class="dropdown-item">Складские остатки</a>
+                                <a href="{{ url_for('leasing.viewstorbycat') }}" class="dropdown-item">Группировка по категориям</a>
+                                <a href="{{ url_for('leasing.viewturnover') }}" class="dropdown-item">Оборачиваемость товаров</a>
                             </div>
                         </li>
                         <li class="nav-item dropdown mr-4">
