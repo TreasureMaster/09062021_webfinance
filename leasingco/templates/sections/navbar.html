@@ -35,7 +35,6 @@
                                 <a href="{{ url_for('leasing.viewdate') }}" class="dropdown-item">Лизинговый портфель на дату</a>
                                 <a href="{{ url_for('leasing.viewregions') }}" class="dropdown-item">Лизинговый портфель по контрагентам</a>
                                 <a href="{{ url_for('leasing.viewtransfer') }}" class="dropdown-item">Передача техники в лизинг</a>
-                                <a href="#" class="dropdown-item">пусто</a>
                             </div>
                         </li>
                         <li class="nav-item dropdown mr-4">
@@ -47,6 +46,16 @@
                                 <a href="{{ url_for('leasing.viewstorage') }}" class="dropdown-item">Складские остатки</a>
                                 <a href="{{ url_for('leasing.viewstorbycat') }}" class="dropdown-item">Группировка по категориям</a>
                                 <a href="{{ url_for('leasing.viewturnover') }}" class="dropdown-item">Оборачиваемость товаров</a>
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown mr-4">
+                            <a href="#" class="nav-link dropdown-toggle text-dark" id="navbarDropdownCovenants"
+                                role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Ковенанты
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdownCovenants">
+                                <a href="{{ url_for('covenants.subsidiary') }}" class="dropdown-item">Дочерняя компания</a>
+                                <a href="{{ url_for('covenants.parental') }}" class="dropdown-item">Материнская компания</a>
                             </div>
                         </li>
                         <li class="nav-item dropdown mr-4">

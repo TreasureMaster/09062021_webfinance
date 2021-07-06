@@ -43,7 +43,9 @@ def create_app(test_config=None):
 
     from . import leasing
     app.register_blueprint(leasing.bp)
-    # app.add_url_rule('/', endpoint='index')
+
+    from . import covenants
+    app.register_blueprint(covenants.bp)
 
     # простая страница, которая здоровается
     @app.route('/hello')

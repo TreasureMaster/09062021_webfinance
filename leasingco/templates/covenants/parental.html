@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block task %}
+
+<h1 class="text-center">Ковенанты материнской компании</h1>
+
+<table class="table table-hover table-sm table-bordered">
+    <thead class="table-success">
+        <tr>
+            <th scope="col" class="text-center">Наименование показателя</th>
+            <th scope="col" class="text-center">Банк</th>
+            <th scope="col" class="text-center">На 01.01.2019</th>
+            <th scope="col" class="text-center">На 01.01.2020</th>
+            <th scope="col" class="text-center">На 01.01.2021</th>
+            <th scope="col" class="text-center">Нормативное значение</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in covenants %}
+        <tr>
+            <td class="text-left small">{{ row['title'] if row['title'] else '' }}</td>
+            <td class="text-center small text-nowrap">{{ row['bank'] if row['bank'] else '' }}</td>
+            <td class="text-center text-nowrap">{{ row['2018'] if row['2018'] else '' }}</td>
+            <td class="text-center text-nowrap">{{ row['2019'] if row['2019'] else '' }}</td>
+            <td class="text-center text-nowrap">{{ row['2020'] if row['2020'] else '' }}</td>
+            <td class="text-right small">{{ row['norm'] if row['norm'] else '' }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='jquery-3.2.1.min.js') }}"></script>
+<script src="{{ url_for('static', filename='popper.min.js') }}"></script>
+{{ super() }}
+{% endblock scripts %}
