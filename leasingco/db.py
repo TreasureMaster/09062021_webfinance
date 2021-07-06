@@ -1,4 +1,3 @@
-# import sqlite3
 import pyodbc
 
 import click
@@ -15,12 +14,6 @@ def get_db():
             Trusted_Connection = 'yes',
             autocommit = True
         )
-        # g.db = sqlite3.connect(
-        #     current_app.config['DATABASE'],
-        #     detect_types=sqlite3.PARSE_DECLTYPES
-        # )
-        # g.db.cursor = g.db.cursor()
-        # g.db.row_factory = sqlite3.Row
 
     return g.db
 

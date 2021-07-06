@@ -1,9 +1,7 @@
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, url_for
 )
-from werkzeug.exceptions import abort
 
-# from flaskr.auth import login_required
 from leasingco.db import get_db
 
 bp = Blueprint('reports', __name__)
@@ -12,12 +10,6 @@ bp = Blueprint('reports', __name__)
 @bp.route('/')
 def index():
     g.user = True
-    # db = get_db()
-    # posts = db.execute(
-    #     'SELECT p.id, title, body, created, author_id, username'
-    #     ' FROM post p JOIN user u ON p.author_id = u.id'
-    #     ' ORDER BY created DESC'
-    # ).fetchall()
     return render_template('index.html')
 
 @bp.route('/parent')
@@ -34,26 +26,6 @@ def parent():
     years = [dict(zip([column[0] for column in cursor.description], row)) for row in cursor.fetchall()]
     cursor.execute("SELECT code, title FROM ReportsTitle WHERE code > 2000")
     finance, _ = get_finance(cursor.fetchall(), years)
-
-    # if request.method == 'POST':
-    #     title = request.form['title']
-    #     body = request.form['body']
-    #     error = None
-
-    #     if not title:
-    #         error = 'Title is required.'
-
-    #     if error is not None:
-    #         flash(error)
-    #     else:
-    #         db = get_db()
-    #         db.execute(
-    #             'INSERT INTO post (title, body, author_id)'
-    #             ' VALUES (?, ?, ?)',
-    #             (title, body, g.user['id'])
-    #         )
-    #         db.commit()
-    #         return redirect(url_for('blog.index'))
 
     return render_template('reports/report.html',
                             balance=balance, finance=finance,
@@ -131,7 +103,6 @@ def consolidation():
     finance = get_mutual_finance(years, finance)
 
     balance = correct_balance(balance, totals_balance)
-    # finance = correct_finance(finance, totals_finance)
 
     return render_template('reports/report.html',
                             balance=balance, finance=finance,
@@ -141,7 +112,6 @@ def consolidation():
 
 # -------------------------------- extra funcs ------------------------------- #
 def update_row(totals, row, idx, mark=False):
-    # if trace: print(row)
     # mark - для изменения бух.расчетов с 2020 года (включение кода 2421)
     if not mark:
         totals[idx]['2018'] += row['2018']
@@ -200,7 +170,6 @@ def get_finance(titles, years, one=True):
     if one:
         for row in finance:
             mark = row['code'] // 100 * 100
-            # print(mark)
             if (2100 < row['code'] < 2500) and row['code'] != mark and row['code'] != 2421:
                 update_row(totals, row, 'c' + str(mark))
             elif row['code'] == 2421:
@@ -220,7 +189,6 @@ def correct_finance(finance, totals):
     update_row(totals, totals['c2100'], 'c2200')
     update_row(totals, totals['c2200'], 'c2300')
     update_row(totals, totals['c2300'], 'c2400')
-    # print(finance)
     return finance
 
 def get_mutual_balance(years, balance):

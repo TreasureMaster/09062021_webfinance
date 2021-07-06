@@ -16,7 +16,6 @@ class Payments:
             self.last_payment = self.convert_date(last)
         else:
             self.last_payment = self.begin_contract
-        # print(self.last_payment)
         self.overdue = {
             'upto30': 0,
             '30-60': 0,
@@ -50,7 +49,6 @@ class Payments:
 
     def get_lastRequiredDate(self, input_date):
         """Определяет последнюю дату платежа меньше заданной даты."""
-        # current_date = self.convert_date(current)
         nearest_list = [i for i in self.get_payments() if i <= input_date]
         nearest_data = min(nearest_list, key=lambda x: abs(x - input_date)) if nearest_list else self.begin_contract
         return nearest_data
@@ -60,14 +58,9 @@ class Payments:
 
     def get_overdueList(self):
         """Лист пропущенных платежей."""
-        # current_date = self.convert_date(current)
         a = [i for i in self.get_payments() if self.get_lastRequiredDate(self.last_payment) <= i < self.current_date]
-        # a.append(self.current_date)
         if len(a) >= 1:
             a = a[1:]
-            # if len(a) >= 1:
-            #     a.append(self.current_date)
-        # print(a)
         return a
 
     def set_overdue(self):

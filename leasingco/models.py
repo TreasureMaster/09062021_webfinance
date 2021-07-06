@@ -146,22 +146,17 @@ class PayModel:
         self.__values = self.create(data)
 
     def create(self, data=None):
-        # self.reset()
         if data is not None:
             data = list(data)
-            # print(data)
             years = {d.year for d in data}
-            # print(years)
             p = {key:{k:None for k in range(1, 13)} for key in years}
             for pay in data:
-                # pay = pay[0]
                 p[pay.year][pay.month] = pay
             return p
 
     def reset(self):
         self.__dictionary = {'keys': [], 'values': []}
         self.__values = {}
-        # self.__contract = None
 
     def transform(self, data):
         data = dict(data)
@@ -172,7 +167,6 @@ class PayModel:
 
     def get_row(self):
         d = self.__values.copy()
-        # d['id'] = self.__id
         return d
 
     def insert(self):
@@ -221,13 +215,6 @@ class PayModel:
                             )
                             self.cursor.execute(query, [self.__contract, d])
         self.db.commit()
-
-    # def delete(self, idx):
-    #     self.cursor.execute(f"SELECT * FROM {self.__table} WHERE id={idx}")
-    #     if not self.cursor.fetchone():
-    #         raise ValueError('id еще не существует')
-    #     self.cursor.execute(f"DELETE {self.__table} WHERE id={idx}")
-    #     self.db.commit()
 
     def select(self, idx, old=False):
         self.__contract = idx

@@ -2,9 +2,7 @@ import datetime
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, url_for
 )
-from werkzeug.exceptions import abort
 
-# from flaskr.auth import login_required
 from leasingco.db import get_db
 from leasingco.models import Product, Region, Client, Incorporation, Contract, PayModel, Storage
 from leasingco.custom_forms import (ProductForm, RegionForm,
@@ -33,10 +31,6 @@ def viewproduct(action=None, idx=None):
         if request.method == 'POST':
             product.update(request.form)
         product.select(idx)
-        # print(form['model'].data)
-        # form.model.data = 'model test'
-        # print(form.model.data)
-        # print(form['model'].data)
         form.category_id.default = product.get_row()['category_id']
         form.process()
         for key, value in product.get_row().items():
@@ -45,11 +39,9 @@ def viewproduct(action=None, idx=None):
     if action == 'delete':
         product = Product()
         product.delete(idx)
-        # redirect(url_for('product.viewproduct'))
     products = db.execute("SELECT Product.*, ProductCategory.category FROM Product "
                           "JOIN ProductCategory ON Product.category_id=ProductCategory.id "
                           "WHERE Product.id <> 0").fetchall()
-    # print(products[0])
     if products is None:
         error = 'DB is empty.'
     if error is not None:
@@ -68,9 +60,7 @@ def viewregion(action=None, idx=None):
     db = get_db()
     error = None
     cursor = db.cursor()
-    # cursor.execute("SELECT * FROM ProductCategory")
     form = RegionForm()
-    # form.category_id.choices = [(g.id, g.category) for g in cursor.fetchall()]
     if request.method == 'POST' and action is None:
         region = Region()
         region.insert(request.form)
@@ -82,17 +72,12 @@ def viewregion(action=None, idx=None):
             region.update(request.form)
         region.select(idx)
         print(region.get_row())
-        # form.category_id.default = product.get_row()['category_id']
-        # form.process()
         for key, value in region.get_row().items():
-            # if key != 'category_id':
             setattr(form[key], 'data', value)
     if action == 'delete':
         region = Region()
         region.delete(idx)
-        # redirect(url_for('product.viewproduct'))
     regions = cursor.execute("SELECT * FROM Regions WHERE id <> 0 ORDER BY region").fetchall()
-    # print(products[0])
     if regions is None:
         error = 'DB is empty.'
     if error is not None:
@@ -116,24 +101,18 @@ def viewincorp(action=None, idx=None):
         incorp = Incorporation()
         incorp.insert(request.form)
     if action == 'update':
-        # print(request.form)
         incorp = Incorporation()
         
         if request.method == 'POST':
             incorp.update(request.form)
         incorp.select(idx)
         print(incorp.get_row())
-        # form.category_id.default = product.get_row()['category_id']
-        # form.process()
         for key, value in incorp.get_row().items():
-            # if key != 'category_id':
             setattr(form[key], 'data', value)
     if action == 'delete':
         incorp = Incorporation()
         incorp.delete(idx)
-        # redirect(url_for('product.viewproduct'))
     incorps = cursor.execute("SELECT * FROM Incorporation WHERE id <> 0 ORDER BY kind").fetchall()
-    # print(products[0])
     if incorps is None:
         error = 'DB is empty.'
     if error is not None:
@@ -149,7 +128,6 @@ def viewincorp(action=None, idx=None):
 @bp.route('/viewclient/<string:action>', methods=('GET', 'POST'))
 @bp.route('/viewclient/<string:action>/<int:idx>', methods=('GET', 'POST'))
 def viewclient(action=None, idx=None):
-    # print(request.url)
     db = get_db()
     error = None
     cursor = db.cursor()
@@ -312,7 +290,6 @@ def viewstorage(action=None, idx=None):
         if request.method == 'POST':
             contract.update(request.form)
         contract.select(idx)
-        # form.client_id.default = contract.get_row()['client_id']
         form.product_id.default = contract.get_row()['product_id']
         form.process()
         for key, value in contract.get_row().items():

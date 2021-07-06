@@ -1,31 +1,8 @@
 from flask_wtf import FlaskForm
 from wtforms import (StringField, SubmitField, IntegerField, SelectField, DateField, FloatField, RadioField)
 from wtforms.fields.simple import HiddenField
-from wtforms.validators import Email, InputRequired
-from leasingco.custom_validators import DateRequired
+from wtforms.validators import InputRequired
 
-
-# TODO как отправить данные Flask в форму
-# class NameForm(FlaskForm):
-#     # 1-й параметр - метка label
-#     # 4-й параметр - описание description (под полем формы)
-#     # 5-й параметр - идентификатор поля (тег id); устанавливается по умолчанию согласно имени переменной поля
-#     # 8-й параметр - словарь render_kw, передающий параметры виждету
-#     name = StringField('Ваше имя?',
-#                     validators=[InputRequired()])
-#     email = StringField('Ваш email?',
-#                      validators=[AnyInputRequired('phone', message='Одно из полей требуется (е-мэйл или телефон)'),
-#                                  Email("Введите корректный е-мэйл (вида 'name@mail.com')")],
-#                      render_kw={'placeholder': 'пример: your_email@mail.com'})
-#     phone = StringField('Телефонный номер для связи',
-#                      validators=[AnyInputRequired('email', message='Одно из полей требуется (е-мэйл или телефон)'),
-#                                  Phone(message='Некорректный телефонный номер (требуется +7 (123) 456-7890)')],
-#                      render_kw={'placeholder': 'пример: +7 (123) 456-7890'})
-#     title = StringField('Заголовок письма')
-#     text = TextAreaField('Текст письма',
-#                       validators=[InputRequired(message='Текст письма требуется')])
-#     submit = SubmitField('Submit',
-#                       render_kw={'value': 'Отправить'})
 
 class ProductForm(FlaskForm):
 
