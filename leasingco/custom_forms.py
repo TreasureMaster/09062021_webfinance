@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import (StringField, SubmitField, IntegerField, SelectField, DateField, FloatField, RadioField)
 from wtforms.fields.simple import HiddenField
 from wtforms.validators import Email, InputRequired
-# from leasingco.custom_validators import AnyInputRequired, Phone
+from leasingco.custom_validators import DateRequired
 
 
 # TODO как отправить данные Flask в форму
@@ -125,7 +125,10 @@ class ChoiceContractForm(FlaskForm):
 
 class PortfolioDateForm(FlaskForm):
 
-    portfolio_date = DateField('Выбор даты просмотра лизингового портфеля', render_kw={'class': 'form-control', 'id': 'datepicker_begin'})
+    portfolio_date = DateField('Выбор даты просмотра лизингового портфеля',
+                                # validators=[DateRequired()],
+                                render_kw={'class': 'form-control', 'id': 'datepicker_begin'},
+                                format='%d.%m.%Y')
     table_view = RadioField('', choices=['все', 'должники'], default='все',
                             render_kw={'class': 'form-check form-check-input list-unstyled d-flex list-group-horizontal justify-content-between w-100'})
     action = HiddenField('', default='portfolio_date')
@@ -138,7 +141,10 @@ class PortfolioDateForm(FlaskForm):
 
 class TransferForm(FlaskForm):
 
-    transfer_date = DateField('Выбор года действия лизингового портфеля', render_kw={'class': 'form-control', 'id': 'datepicker_begin'})
+    transfer_date = DateField('Выбор года действия лизингового портфеля',
+                               render_kw={'class': 'form-control', 'id': 'datepicker_begin'},
+                            #    format='%Y'
+                            )
     table_view = RadioField('', choices=['менеджеры', 'месяцы', 'кварталы'], default='менеджеры',
                             render_kw={'class': 'form-check form-check-input list-unstyled d-flex list-group-horizontal justify-content-around w-100'})
     # action = HiddenField('', default='portfolio_date')

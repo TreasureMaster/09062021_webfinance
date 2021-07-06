@@ -26,8 +26,14 @@
         {% block header %}{% endblock %}
     </header>
     {% for message in get_flashed_messages() %}
-    {#<div class="flash">{{ message }}</div>#}
-    {{ message }}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {#<h4 class="alert-heading">{{ message }}</h4>
+        <hr>#}
+        <p>{{message}}</p>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
     {% endfor %}
     {#{% include 'flashes/flash_error.html' %}#}
 

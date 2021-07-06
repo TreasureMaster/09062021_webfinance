@@ -45,8 +45,7 @@
             <td class="text-left small">{{ row['inn'] if row['inn'] else '' }}</td>
             <td class="text-right text-nowrap">{{ '{:,d}'.format(row['total']).replace(',', ' ') if row['total'] else '' }}</td>
             <td class="text-right text-nowrap">{{ '{:,d}'.format(row['remaining']).replace(',', ' ') if row['remaining'] else '' }}</td>
-            {#<td class="text-right text-nowrap">{{ '{:,d}'.format(row['upto30']).replace(',', ' ') if row['upto30'] else '' }}</td>#}
-            <td></td>
+            <td class="text-center text-nowrap">{{ '{:d}'.format(row['portfolio_term']) if row['portfolio_term'] else '' }}</td>
             <td class="text-right text-nowrap">{{ '{:.2f}%'.format(row['proportion']) if row['proportion'] else '' }}
         </tr>
     {% endfor %}
@@ -54,7 +53,7 @@
             <th colspan="3">Итого:</th>
             <td class="text-right text-nowrap">{{ '{:,d}'.format(summ['total']).replace(',', ' ') if summ['total'] else '' }}</td>
             <td class="text-right text-nowrap">{{ '{:,d}'.format(summ['remaining']).replace(',', ' ') if summ['remaining'] else '' }}</td>
-            <td class="text-right text-nowrap">{{ '{:,d}'.format(summ['upto30']).replace(',', ' ') if summ['upto30'] else '' }}</td>
+            <td class="text-center text-nowrap">{{ '{:d}'.format(summ['portfolio_term']).replace(',', ' ') if summ['portfolio_term'] else '' }}</td>
             <td class="text-right text-nowrap">{{ '{:.2f}%'.format(summ['proportion']) if summ['proportion'] else '' }}</td>
         </tr>
 </table>

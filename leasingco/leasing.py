@@ -14,7 +14,7 @@ bp = Blueprint('leasing', __name__, url_prefix='/leasing')
 
 
 @bp.route('/viewdate', methods=('GET', 'POST'))
-def viewdate(date=None):
+def viewdate():
     db = get_db()
     error = None
     cursor = db.cursor()
@@ -30,8 +30,10 @@ def viewdate(date=None):
     }
     if request.method == 'POST':
         if request.form['action'] == 'portfolio_date':
-            date_choice = parse(request.form['portfolio_date'], dayfirst=True).date()
-            print(date_choice)
+            if form.validate_on_submit():
+                date_choice = parse(request.form['portfolio_date'], dayfirst=True).date()
+            else:
+                error = "Неправильный ввод даты: '{}'".format(request.form['portfolio_date'])
 
     cursor.execute("SELECT Contract.*, CONCAT(Clients.title, ', ', Incorporation.kind) AS title, "
                    " Clients.INN as inn FROM Contract "
@@ -60,7 +62,7 @@ def viewdate(date=None):
         summ['over90'] += overdue['over90']
         summ['remaining'] += row['remaining']
         summ['total'] += row['total']
-    print(portfolio[0])
+    # print(portfolio[0])
     if request.method == 'POST' and request.form['table_view'] == 'должники':
         portfolio = [p for p in portfolio if p['debtor']]
         summ['total'] = sum([p['total'] for p in portfolio])
@@ -69,7 +71,7 @@ def viewdate(date=None):
         error = 'DB is empty.'
     if error is not None:
         flash(error)
-        return redirect(url_for('index'))
+        # return redirect(url_for('leasing.viewdate'))
 
     return render_template('reports/portfoliodate.html', portfolio_date=date_choice,
                                                          portfolio=portfolio, portfolio_form=form,
@@ -89,12 +91,16 @@ def viewregions(date=None):
         'upto30': 0,
         '30-60': 0,
         '60-90': 0,
-        'over90': 0
+        'over90': 0,
+        'portfolio_term': 0
     }
     if request.method == 'POST':
+        # Выбирает текущую дату
         if request.form['action'] == 'portfolio_date':
-            date_choice = parse(request.form['portfolio_date'], dayfirst=True).date()
-            print(date_choice)
+            if form.validate_on_submit():
+                date_choice = parse(request.form['portfolio_date'], dayfirst=True).date()
+            else:
+                error = "Неправильный ввод даты: '{}'".format(request.form['portfolio_date'])
 
     cursor.execute("SELECT Contract.total, CONCAT(Clients.title, ', ', Incorporation.kind) AS title, "
                    "Clients.INN as inn, Regions.region, Contract.begin_date, Contract.end_date, "
@@ -105,6 +111,7 @@ def viewregions(date=None):
                    "WHERE Contract.end_date >= CONVERT(date, '{}', 23) AND Contract.begin_date <= CONVERT(date, '{}', 23) "
                    "ORDER BY Contract.number".format(date_choice, date_choice))
     portfolio = [dict(zip([column[0] for column in cursor.description], row)) for row in cursor.fetchall()]
+    # Определение даты последнего платежа для кааждого контракта
     for row in portfolio:
         cursor.execute("SELECT payment_date FROM Payments "
                        "WHERE contract_id = {} AND "
@@ -113,28 +120,34 @@ def viewregions(date=None):
         lastpay_date = max(listing) if listing else None
         payment = Payments(row['total'], row['begin_date'], row['end_date'], date_choice, lastpay_date)
         row['remaining'] = payment.get_remaining()
+        row['portfolio_term'] = (row['end_date'] - date_choice).days
         row.pop('begin_date', None)
         row.pop('end_date', None)
         summ['remaining'] += row['remaining']
         summ['total'] += row['total']
-    print(portfolio[0])
+    # print(portfolio[0])
     new_portfolio = []
+    # Для каждого клиента (id)
     for idx in {row['id'] for row in portfolio}:
         total = sum(row['total'] for row in portfolio if row['id']==idx)
         remaining = sum(row['remaining'] for row in portfolio if row['id']==idx)
+        portfolio_term = sum(row['portfolio_term'] for row in portfolio if row['id']==idx)
+        qty_term = len(list(row['portfolio_term'] for row in portfolio if row['id']==idx))
         rows = [row for row in portfolio if row['id']==idx][0]
         rows['total'] = total
         rows['remaining'] = remaining
         rows['proportion'] = remaining / summ['remaining'] * 100
+        rows['portfolio_term'] = round(portfolio_term / 30 / qty_term)
         new_portfolio.append(rows)
     new_portfolio.sort(key=lambda row: row['total'], reverse=True)
     summ['proportion'] = sum(row['proportion'] for row in new_portfolio)
+    summ['portfolio_term'] = round(sum(row['portfolio_term'] for row in new_portfolio) / len(new_portfolio))
 
     if portfolio is None:
         error = 'DB is empty.'
     if error is not None:
         flash(error)
-        return redirect(url_for('index'))
+        # return redirect(url_for('index'))
     
     return render_template('reports/portfolioregions.html', portfolio_date=date_choice,
                                                          portfolio=new_portfolio, portfolio_form=form,
@@ -148,7 +161,7 @@ def viewtransfer(action=None, idx=None):
     error = None
     cursor = db.cursor()
     year_choice = datetime.date.today().year
-    print(year_choice)
+    # print(year_choice)
     form = TransferForm()
     quarters = {}
     month_mark = True
@@ -158,7 +171,10 @@ def viewtransfer(action=None, idx=None):
     key_select = 'manager'
     if request.method == 'POST' and action is None:
         if request.form['transfer_date']:
+            # if form.validate_on_submit():
             year_choice = parse(request.form['transfer_date'], dayfirst=True).date().year
+            # else:
+            #     error = "Неправильный ввод даты: '{}'".format(request.form['transfer_date'])
         if request.form['table_view'] == 'менеджеры':
             pass
         elif request.form['table_view'] != 'менеджеры':
@@ -175,7 +191,7 @@ def viewtransfer(action=None, idx=None):
                    "JOIN Incorporation ON Clients.incorp_id=Incorporation.id "
                    "WHERE DATEPART(yyyy, Contract.begin_date) = '{}' ".format(year_choice))
     contracts = [dict(zip([column[0] for column in cursor.description], row)) for row in cursor.fetchall()]
-    print(contracts[0])
+    # print(contracts[0])
     cursor.execute("SELECT {}, "
 		           "COUNT(number) AS manager_contracts, "
 		           "SUM(total) AS manager_total, "
@@ -185,14 +201,14 @@ def viewtransfer(action=None, idx=None):
                    "WHERE DATEPART(yyyy, begin_date) = '{}' "
                    "GROUP BY {}".format(select_query, comms_query, year_choice, groupby_query))
     managers_pred = [dict(zip([column[0] for column in cursor.description], row)) for row in cursor.fetchall()]
-    print(managers_pred)
+    # print(managers_pred)
     managers = {}
     for manager in managers_pred:
         surname = manager[key_select]
         managers[surname] = manager
         managers[surname].pop(key_select, None)
         managers[surname]['contracts'] = []
-    print(managers)
+    # print(managers)
     if key_select == 'manager':
         for contract in contracts:
             managers[contract['manager']]['contracts'].append(contract)
@@ -246,7 +262,7 @@ def viewtransfer(action=None, idx=None):
         error = 'DB is empty.'
     if error is not None:
         flash(error)
-        return redirect(url_for('index'))
+        # return redirect(url_for('index'))
     
     return render_template('reports/portfolio{}s.html'.format(key_select),
                             contracts=contracts, form=form, year_choice=year_choice,
@@ -263,7 +279,7 @@ def viewstorage(action=None, idx=None):
                            "FROM Storage "
                            "JOIN Product ON Storage.product_id=Product.id "
                            "ORDER BY receipt_date").fetchall()
-    print(storage[0])
+    # print(storage[0])
     summ = {}
     summ['begin_qty'] = sum(row[2] for row in storage)
     summ['begin_total'] = sum(row[3] for row in storage)
@@ -292,10 +308,10 @@ def viewstorbycat(action=None, idx=None):
                            "JOIN ProductCategory ON Product.category_id=ProductCategory.id "
                            "ORDER BY receipt_date")
     storage = [dict(zip([column[0] for column in cursor.description], row)) for row in cursor.fetchall()]
-    print(storage[0])
+    # print(storage[0])
     storage_keys = {row['category']: [] for row in storage}
     storage_results = {row['category']: {'qty': 0, 'begin': 0, 'end': 0, 'qty_end': 0, 'remain': 0, 'remain_qty': 0} for row in storage}
-    print(storage_keys)
+    # print(storage_keys)
     for row in storage:
         storage_keys[row['category']].append(row)
         storage_results[row['category']]['qty'] += row['qty']
@@ -336,10 +352,10 @@ def viewturnover(action=None, idx=None):
                            "JOIN ProductCategory ON Product.category_id=ProductCategory.id "
                            "ORDER BY receipt_date")
     storage = [dict(zip([column[0] for column in cursor.description], row)) for row in cursor.fetchall()]
-    print(storage[0])
+    # print(storage[0])
     storage_keys = {row['category']: [] for row in storage}
     storage_results = {row['category']: {'qty': 0, 'begin': 0, 'end': 0, 'qty_end': 0} for row in storage}
-    print(storage_keys)
+    # print(storage_keys)
     for row in storage:
         storage_keys[row['category']].append(row)
         storage_results[row['category']]['qty'] += row['qty']
