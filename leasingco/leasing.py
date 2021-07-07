@@ -275,7 +275,7 @@ def viewstorage(action=None, idx=None):
     db = get_db()
     error = None
     storage = db.execute("SELECT Storage.*, "
-                           "TRIM(CONCAT(prefix, ' ', manufacturer, ' ', model, ' ', VIN, ' ', description)) as tech "
+                           "LTRIM(CONCAT(prefix, ' ', manufacturer, ' ', model, ' ', VIN, ' ', description)) as tech "
                            "FROM Storage "
                            "JOIN Product ON Storage.product_id=Product.id "
                            "ORDER BY receipt_date").fetchall()
@@ -302,7 +302,7 @@ def viewstorbycat(action=None, idx=None):
     error = None
     cursor = db.cursor()
     cursor.execute("SELECT Storage.*, ProductCategory.category, Product.manufacturer, "
-                           "TRIM(CONCAT(prefix, ' ', manufacturer, ' ', model, ' ', VIN, ' ', description)) as tech "
+                           "LTRIM(CONCAT(prefix, ' ', manufacturer, ' ', model, ' ', VIN, ' ', description)) as tech "
                            "FROM Storage "
                            "JOIN Product ON Storage.product_id=Product.id "
                            "JOIN ProductCategory ON Product.category_id=ProductCategory.id "
@@ -346,7 +346,7 @@ def viewturnover(action=None, idx=None):
     error = None
     cursor = db.cursor()
     cursor.execute("SELECT Storage.*, ProductCategory.category, Product.manufacturer, "
-                           "TRIM(CONCAT(prefix, ' ', manufacturer, ' ', model, ' ', VIN, ' ', description)) as tech "
+                           "LTRIM(CONCAT(prefix, ' ', manufacturer, ' ', model, ' ', VIN, ' ', description)) as tech "
                            "FROM Storage "
                            "JOIN Product ON Storage.product_id=Product.id "
                            "JOIN ProductCategory ON Product.category_id=ProductCategory.id "

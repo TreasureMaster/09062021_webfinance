@@ -280,7 +280,7 @@ def viewstorage(action=None, idx=None):
     error = None
     cursor = db.cursor()
     form = StorageForm()
-    cursor.execute("SELECT id, TRIM(CONCAT(prefix, ' ', manufacturer, ' ', model, ' ', VIN, ' ', description)) as tech FROM Product")
+    cursor.execute("SELECT id, LTRIM(CONCAT(prefix, ' ', manufacturer, ' ', model, ' ', VIN, ' ', description)) as tech FROM Product")
     form.product_id.choices = [(c.id, c.tech) for c in cursor.fetchall()]
     if request.method == 'POST' and action is None:
         contract = Storage()
@@ -299,7 +299,7 @@ def viewstorage(action=None, idx=None):
         contract = Storage()
         contract.delete(idx)
     storage = db.execute("SELECT Storage.*, "
-                           "TRIM(CONCAT(prefix, ' ', manufacturer, ' ', model, ' ', VIN, ' ', description)) as tech "
+                           "LTRIM(CONCAT(prefix, ' ', manufacturer, ' ', model, ' ', VIN, ' ', description)) as tech "
                            "FROM Storage "
                            "JOIN Product ON Storage.product_id=Product.id "
                            "ORDER BY receipt_date").fetchall()
