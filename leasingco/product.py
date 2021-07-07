@@ -11,7 +11,7 @@ from leasingco.payments import Payments
 
 bp = Blueprint('edit', __name__, url_prefix='/edit')
 
-
+# Редактирование техники
 @bp.route('/viewproduct', methods=('GET', 'POST'))
 @bp.route('/viewproduct/<string:action>', methods=('GET', 'POST'))
 @bp.route('/viewproduct/<string:action>/<int:idx>', methods=('GET', 'POST'))
@@ -52,7 +52,7 @@ def viewproduct(action=None, idx=None):
     
     return render_template('edit/editproduct.html', products=products, form=form)
 
-
+# Редактирование названий регионов
 @bp.route('/viewregion', methods=('GET', 'POST'))
 @bp.route('/viewregion/<string:action>', methods=('GET', 'POST'))
 @bp.route('/viewregion/<string:action>/<int:idx>', methods=('GET', 'POST'))
@@ -88,7 +88,7 @@ def viewregion(action=None, idx=None):
     
     return render_template('edit/editregion.html', regions=regions, form=form)
 
-
+# Редактирование организацонно-правовых форм предприятий
 @bp.route('/viewincorp', methods=('GET', 'POST'))
 @bp.route('/viewincorp/<string:action>', methods=('GET', 'POST'))
 @bp.route('/viewincorp/<string:action>/<int:idx>', methods=('GET', 'POST'))
@@ -123,7 +123,7 @@ def viewincorp(action=None, idx=None):
     
     return render_template('edit/editincorp.html', incorps=incorps, form=form)
 
-
+# Редактирование клиентов (лизингополучателей)
 @bp.route('/viewclient', methods=('GET', 'POST'))
 @bp.route('/viewclient/<string:action>', methods=('GET', 'POST'))
 @bp.route('/viewclient/<string:action>/<int:idx>', methods=('GET', 'POST'))
@@ -167,7 +167,7 @@ def viewclient(action=None, idx=None):
     
     return render_template('edit/editclient.html', clients=clients, form=form)
 
-
+# Редактирование договоров
 @bp.route('/viewcontract', methods=('GET', 'POST'))
 @bp.route('/viewcontract/<string:action>', methods=('GET', 'POST'))
 @bp.route('/viewcontract/<string:action>/<int:idx>', methods=('GET', 'POST'))
@@ -216,7 +216,7 @@ def viewcontract(action=None, idx=None):
     
     return render_template('edit/editcontract.html', contracts=contracts, form=form)
 
-
+# Редактирование графика дат платежей
 @bp.route('/viewpays', methods=('GET', 'POST'))
 @bp.route('/viewpays/<string:action>', methods=('GET', 'POST'))
 @bp.route('/viewpays/<string:action>/<int:idx>', methods=('GET', 'POST'))
@@ -271,7 +271,7 @@ def viewpays(action=None, idx=None):
                             current_contract=current_contract,
                             marked = marked)
 
-
+# редактирование склада
 @bp.route('/viewstorage', methods=('GET', 'POST'))
 @bp.route('/viewstorage/<string:action>', methods=('GET', 'POST'))
 @bp.route('/viewstorage/<string:action>/<int:idx>', methods=('GET', 'POST'))

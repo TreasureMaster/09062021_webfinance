@@ -6,12 +6,13 @@ from leasingco.db import get_db
 
 bp = Blueprint('reports', __name__)
 
-
+# главная страница
 @bp.route('/')
 def index():
     g.user = True
     return render_template('index.html')
 
+# Отчетности материнской компании
 @bp.route('/parent')
 def parent():
     delim = {1100, 1300, 1400, 1600, 1700}
@@ -32,6 +33,7 @@ def parent():
                             delim=delim, post_title='материнской компании',
                             pre_title='')
 
+# Отчетности дочерней компании
 @bp.route('/subsidiary')
 def subsidiary():
     delim = {1100, 1300, 1400, 1600, 1700}
@@ -52,7 +54,7 @@ def subsidiary():
                             delim=delim, post_title='дочерней компании',
                             pre_title='')
 
-
+# Консолидированные отчетности по обеим компаниям
 @bp.route('/consolidation')
 def consolidation():
     delim = {1100, 1300, 1400, 1600, 1700}

@@ -8,7 +8,7 @@ from leasingco.db import get_db
 
 bp = Blueprint('covenants', __name__, url_prefix='/covenants')
 
-
+# ковенанты дочерней компании
 @bp.route('/subsidiary', methods=('GET', 'POST'))
 def subsidiary():
     db = get_db()
@@ -45,6 +45,11 @@ def subsidiary():
         {year: func(results, year, ratio).quantize(Decimal('1.00'))
         for year, ratio in zip(['2018', '2019', '2020'], ['1.18', '1.2', '1.2'])}
         for func in funcs_sub]
+# Здесь встраивается вывод для строки, где нарушений нет по дочерней компании
+# Если он одинаков, просто исправляем строку 'Нарушений нет' на нужную
+# Если разный, то вместо это строки можно вставить вывод из родительской компании:
+# ('Нарушений нет' if year == '2018' else ('13 738 225.00' if year == '2019' else '46 526 146.00')) вместо 'Нарушений нет'
+# Принцип определения лет тот же, что и в материнской компании
     covenants.insert(6, {key: 'Нарушений нет' for key in {'2018', '2019', '2020'}})
     covenants = [(lambda row, title, bank, norm: (row.update({'title': title, 'bank': bank, 'norm': norm}) or row))(row, title, bank, norm)
                  for row, title, bank, norm in zip(covenants, extras_sub['title'], extras_sub['bank'], extras_sub['norm'])]
@@ -131,7 +136,7 @@ extras_sub = {
 }
 # ---------------------------------------------------------------------------- #
 
-
+# ковенанты материнской компании
 @bp.route('/parental', methods=('GET', 'POST'))
 def parental():
     db = get_db()
@@ -163,6 +168,12 @@ def parental():
     return render_template('covenants/parental.html', covenants=covenants)
 
 # ---------------------------------------------------------------------------- #
+# Для материнской компании
+# Здесь определены функции для расчета каждой строки
+# Если нарушений нет или есть (все одинаковы для всех лет), то в lambda так и пишем - ('Нарушений нет')
+#                                             для 2018                                для 2019                               для 2020
+# Если отдельно по каждому году, то пишем - ('Нарушений нет' if year == '2018' else ('13 738 225.00' if year == '2019' else '46 526 146.00'))
+# Строки вывода для каждого года (2018 и 2019) перед этим годом. Для 2020 - последняя строка.
 funcs = [
     lambda data, year: ((data['1'][year] + data['4'][year])
                          / (data['10'][year] - data['9'][year] + data['7'][year]

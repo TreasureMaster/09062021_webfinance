@@ -12,7 +12,7 @@ from leasingco.payments import Payments
 
 bp = Blueprint('leasing', __name__, url_prefix='/leasing')
 
-
+# Лизинговый портфель на дату (как есть)
 @bp.route('/viewdate', methods=('GET', 'POST'))
 def viewdate():
     db = get_db()
@@ -77,7 +77,7 @@ def viewdate():
                                                          portfolio=portfolio, portfolio_form=form,
                                                          summ=summ)
 
-
+# Лизинговый портфель по контрагентам (регионам)
 @bp.route('/viewregions', methods=('GET', 'POST'))
 def viewregions(date=None):
     db = get_db()
@@ -153,7 +153,7 @@ def viewregions(date=None):
                                                          portfolio=new_portfolio, portfolio_form=form,
                                                          summ=summ)
 
-
+# Передача техники в лизинг
 @bp.route('/viewtransfer', methods=('GET', 'POST'))
 def viewtransfer(action=None, idx=None):
     MONTHS = [None, 'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
@@ -269,7 +269,7 @@ def viewtransfer(action=None, idx=None):
                             managers=managers, managers_keys=managers_keys, months=MONTHS,
                             month_mark=month_mark)
 
-
+# складские остатки
 @bp.route('/viewstorage', methods=('GET', 'POST'))
 def viewstorage(action=None, idx=None):
     db = get_db()
@@ -295,7 +295,7 @@ def viewstorage(action=None, idx=None):
     
     return render_template('reports/storage.html', storage=storage, summ=summ)
 
-
+# складские остатки, разбитые по категориям
 @bp.route('/viewstorbycat', methods=('GET', 'POST'))
 def viewstorbycat(action=None, idx=None):
     db = get_db()
@@ -339,7 +339,7 @@ def viewstorbycat(action=None, idx=None):
     
     return render_template('reports/storagebycategory.html', storage=storage_keys, results=storage_results, summ=summ)
 
-
+# оборачиваемость товаров
 @bp.route('/viewturnover', methods=('GET', 'POST'))
 def viewturnover(action=None, idx=None):
     db = get_db()
