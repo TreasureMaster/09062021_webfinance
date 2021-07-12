@@ -1,6 +1,13 @@
+import json
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, url_for
+    Blueprint, flash, g, redirect, render_template, request, url_for,
+    send_from_directory, current_app
 )
+from openpyxl import Workbook
+from openpyxl.worksheet.table import Table, TableStyleInfo
+from openpyxl.styles import Font, Alignment, NamedStyle, PatternFill
+from openpyxl.styles.colors import Color
+from werkzeug.exceptions import abort
 
 from leasingco.db import get_db
 
@@ -22,16 +29,18 @@ def parent():
     years = [dict(zip([column[0] for column in cursor.description], row)) for row in cursor.fetchall()]
     cursor.execute("SELECT code, title FROM ReportsTitle WHERE code < 2000")
     balance, _ = get_balance(cursor.fetchall(), years)
+    get_excel_reports(balance, 'parental', 'balance')
 
     cursor.execute("SELECT * FROM FinanceResults WHERE id_company=1")
     years = [dict(zip([column[0] for column in cursor.description], row)) for row in cursor.fetchall()]
     cursor.execute("SELECT code, title FROM ReportsTitle WHERE code > 2000")
     finance, _ = get_finance(cursor.fetchall(), years)
+    get_excel_reports(finance, 'parental', 'finance')
 
     return render_template('reports/report.html',
                             balance=balance, finance=finance,
                             delim=delim, post_title='материнской компании',
-                            pre_title='')
+                            pre_title='', filename='parental')
 
 # Отчетности дочерней компании
 @bp.route('/subsidiary')
@@ -43,16 +52,18 @@ def subsidiary():
     years = [dict(zip([column[0] for column in cursor.description], row)) for row in cursor.fetchall()]
     cursor.execute("SELECT code, title FROM ReportsTitle WHERE code < 2000")
     balance, _ = get_balance(cursor.fetchall(), years)
+    get_excel_reports(balance, 'subsidiary', 'balance')
 
     cursor.execute("SELECT * FROM FinanceResults WHERE id_company=2")
     years = [dict(zip([column[0] for column in cursor.description], row)) for row in cursor.fetchall()]
     cursor.execute("SELECT code, title FROM ReportsTitle WHERE code > 2000")
     finance, _ = get_finance(cursor.fetchall(), years)
+    get_excel_reports(finance, 'subsidiary', 'finance')
 
     return render_template('reports/report.html',
                             balance=balance, finance=finance,
                             delim=delim, post_title='дочерней компании',
-                            pre_title='')
+                            pre_title='', filename='subsidiary')
 
 # Консолидированные отчетности по обеим компаниям
 @bp.route('/consolidation')
@@ -105,14 +116,68 @@ def consolidation():
     finance = get_mutual_finance(years, finance)
 
     balance = correct_balance(balance, totals_balance)
+    get_excel_reports(balance, 'consolidation', 'balance')
+    get_excel_reports(finance, 'consolidation', 'finance')
 
     return render_template('reports/report.html',
                             balance=balance, finance=finance,
                             delim=delim, post_title='предприятий группы компаний',
-                            pre_title='Консолидированный ')
+                            pre_title='Консолидированный ', filename='consolidation')
 
+
+@bp.route('/get_excel/<string:prefix>/<string:report>')
+def get_excel(prefix=None, report=None):
+    print(current_app.config['CLIENT_XLSX'])
+    try:
+        return send_from_directory(current_app.config['CLIENT_XLSX'], path=f'{prefix}_{report}.xlsx', as_attachment=True)
+    except FileNotFoundError:
+        abort(404)
 
 # -------------------------------- extra funcs ------------------------------- #
+def get_excel_reports(balance, title, report):
+    wb = Workbook()
+    ws = wb.active
+    code = NamedStyle(name='code')
+    code.font = Font(bold=True)
+    code.alignment = Alignment(horizontal='center')
+    wb.add_named_style(code)
+    heading = [
+        'Показатели',
+        'Код строки',
+        '2018',
+        '2019',
+        '2020'
+    ]
+    ws.append(heading)
+    for c in range(1, 6):
+            ws.cell(row=ws._current_row, column=c).fill = PatternFill(patternType='solid', fgColor=Color(rgb='00CCFFCC'))
+            ws.cell(row=ws._current_row, column=c).font = Font(bold=True, size=13)
+            ws.cell(row=ws._current_row, column=c).alignment = Alignment(horizontal='center')
+    if title == 'balance':
+        ws.append(['Актив', 'Код', '', '', ''])
+        ws.cell(row=ws._current_row, column=2).style = code
+    tab = Table(displayName='Test', ref='A1:E42')
+    first_len = max(len(r['title']) for r in balance)
+    print(first_len)
+    lengths = [first_len] + [17]*4
+    for num, col in enumerate(['A', 'B', 'C', 'D', 'E']):
+        ws.column_dimensions[col].width = lengths[num]
+
+    for raw_row in balance:
+        row = [str(r) for r in raw_row.values()]
+        ws.append(row if int(row[1]) >= 1000 else [row[0], '', '', '', ''])
+        ws.cell(row=ws._current_row, column=2).style = code
+        if raw_row['code'] in {1600, 1700, 2400}:
+            for c in range(1, 6):
+                ws.cell(row=ws._current_row, column=c).fill = PatternFill(patternType='solid', fgColor=Color(rgb='00FFFF99'))
+            ws.cell(row=ws._current_row, column=1).alignment = Alignment(horizontal='right')
+            ws.cell(row=ws._current_row, column=1).font = Font(bold=True)
+        if raw_row['code'] == 1600:
+            ws.append(['Пассив', 'Код', '', '', ''])
+            ws.cell(row=ws._current_row, column=2).style = code
+    ws.add_table(tab)
+    wb.save(current_app.config['CLIENT_XLSX'] + '{}_{}.xlsx'.format(title, report))
+
 def update_row(totals, row, idx, mark=False):
     # mark - для изменения бух.расчетов с 2020 года (включение кода 2421)
     if not mark:

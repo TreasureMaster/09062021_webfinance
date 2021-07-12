@@ -31,6 +31,12 @@ def create_app(test_config=None):
     Bootstrap(app)
     app.config['BOOTSTRAP_CDN_FORCE_SSL'] = True
 
+    app.config['CLIENT_XLSX'] = os.path.normpath(
+        os.path.abspath(
+            '.' + '/leasingco/static/client/xlsx/'
+        )
+    ) + os.path.sep
+
     from . import db
     db.init_app(app)
 

@@ -55,6 +55,7 @@
         {% endif %}
     {% endfor %}
 </table>
+<button type="button" class="btn btn-success" id="btn-balance"><i class="fa fa-lg fa-file-excel" aria-hidden="true"></i>&nbsp; Скачать отчет баланса</button>
 <h1 class="text-center">Отчет о финансовых результатах {{ post_title }}</h1>
 <table class="table table-hover my-5">
     {% for row in finance %}
@@ -118,4 +119,37 @@
         {% endif %}
     {% endfor %}
 </table>
+<button type="button" class="btn btn-success mb-4" id="btn-finance"><i class="fa fa-lg fa-file-excel" aria-hidden="true"></i>&nbsp; Скачать отчет финансовых результатов</button>
 {% endblock content %}
+
+{% block scripts %}
+
+
+<script src="{{ url_for('static', filename='jquery-3.2.1.min.js') }}"></script>
+<script src="{{ url_for('static', filename='popper.min.js') }}"></script>
+{{ super() }}
+<script src="{{ url_for('static', filename='all.min.js') }}"></script>
+<script type="text/javascript">
+    $('#btn-balance, #btn-finance').click(function () {
+        let elem = $(this).attr('id');
+        elem = elem.slice(elem.indexOf('-')+1);
+        let url = "{{'/get_excel/{}/'.format(filename)}}";
+        url = url + elem
+        $.ajax({
+            url: url,
+            dataType: 'binary',
+            xhrFields: {
+                'responseType': 'blob'
+            },
+            success: function(data, status, xhr) {
+                var link = document.createElement('a'),
+                    filename = "{{'{}_'.format(filename)}}";
+                filename = filename + elem + '.xlsx'
+                link.href = URL.createObjectURL(data);
+                link.download = filename;
+                link.click();
+            }
+        });
+    });
+</script>
+{% endblock scripts %}

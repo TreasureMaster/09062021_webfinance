@@ -58,6 +58,9 @@ tasks/
 packages/
 test.py
 test_*.py
+*.xlsx
+*.xls
+dirtree1.txt
 
 # Temp hide
 storage.py
